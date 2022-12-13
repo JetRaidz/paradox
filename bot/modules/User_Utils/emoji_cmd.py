@@ -185,7 +185,6 @@ async def cmd_emoji(ctx: cmdClient, flags):
         # React to the specified message.
         # Wrap this in try/except in case the message was deleted in the meantime somehow.
         try:
-            print(emoji, emoji_is_custom)
             await ctx.client.http.add_reaction(ctx.ch.id, react_message.id, 
                 "{}:{}".format(emoji.name, emoji.id) if emoji_is_custom else emoji['emoji'])
         except discord.NotFound:
