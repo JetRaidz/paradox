@@ -1,67 +1,44 @@
 from datetime import datetime
 
+import re
 import asyncio
 import discord
-import aiohttp
-from discord.http import Route
 
 from cmdClient import cmdClient
 
 from utils.lib import prop_tabulate, strfdelta
 
 from .module import utils_module as module
+from .emojis import emojis_by_name, emoji_names_by_unicode
+
+default_emoji_url = "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/{}.png"
+
+def get_custom_emoji(ctx, emoji_str):
+    # Not valid emoji name or emoji id
+    # Cross fingers and hope it is of form a:name:id, <a:name:id>, name:id, or <:name:id>
+    # Give up otherwise
+    if not re.match(r"^[A-Za-z0-9_]+$", emoji_str):
+        id = re.search(r"\d+", emoji_str)
+        if not id: return None
+        id = int(id.group())
+        return discord.utils.get(ctx.client.emojis, id=id)
+
+    # Not valid emoji id
+    # Priority: guild exact match > guild inexact match > exact match > inexact match
+    if not emoji_str.isdigit():
+        return discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.guild.emojis) or \
+            discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.guild.emojis) or \
+            discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.client.emojis) or \
+            discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.client.emojis)
+
+    # Valid emoji id
+    return discord.utils.get(ctx.guild.emojis, id=int(emoji_str)) or \
+        discord.utils.get(ctx.client.emojis, id=int(emoji_str))
 
 
-emoji_url = "https://cdn.discordapp.com/emojis/{id}.{img_type}"
-
-
-async def get_custom_emoji(ctx, guild_id, emoji_id):
-    emoji = await ctx.client.http.request(
-        Route('GET', '/guilds/{guild_id}/emojis/{emoji_id}'.format(guild_id=guild_id, emoji_id=emoji_id))
-    )
-    return emoji
-
-
-async def get_custom_emojis(ctx, guild_id):
-    emojis = await ctx.client.http.request(
-        Route('GET', '/guilds/{guild_id}/emojis'.format(guild_id=guild_id))
-    )
-    return emojis
-
-
-async def emoji_validity(emoji):
-    """
-    Check the validity of emoji['id'] by attempting to get it from discord.
-    Also set the animated field if not set.
-    """
-    if 'id' not in emoji:
-        return None
-
-    # Try to get the animated version
-    async with aiohttp.ClientSession() as session:
-        async with session.get(emoji_url.format(id=emoji['id'], img_type='gif')) as r:
-            await r.read()  # To silence a exception caused by a bug with aiohttp and python3.7
-            if r.status == 200:
-                emoji['animated'] = True
-                return True
-
-
-        # Try to get the static version
-        async with session.get(emoji_url.format(id=emoji['id'], img_type='png')) as r:
-            await r.read()  # To silence a exception caused by a bug with aiohttp and python3.7
-            if r.status == 200:
-                emoji['animated'] = False
-                return True
-
-    # Neither version worked, the emoji is invalid
-    return False
-
-
-def read_emoji_link(emoji):
-    """
-    Return an image url for this emoji, accounting for animated setting.
-    """
-    return emoji_url.format(id=emoji['id'], img_type='gif' if emoji.get('animated', False) else 'png')
+def unicode_char_rep(uni):
+    # 65039 is fe0f, doesn't play nicely with Twemoji
+    return "-".join(f"{ord(c):X}".lower() for c in uni if ord(c) >= 128 and ord(c) != 65039)
 
 
 @module.cmd("emoji",
@@ -95,114 +72,73 @@ async def cmd_emoji(ctx: cmdClient, flags):
     enlarged_only = (ctx.alias == 'ee') or (flags['e'] and not react_only)
     info = (ctx.alias == 'emoji') and not enlarged_only
 
-    if not (ctx.args or react_only):
-        # If no arguments are given and we aren't reacting, just list the current guild custom emojis.
+    # No arguments given and we aren't reacting
+    if not ctx.args and not react_only:
+        # List the current guild custom emojis
         if not ctx.guild:
-            await ctx.error_reply("Search for emojis using `{}emoji <emojistring>`".format(prefix))
-        else:
-            emojis = ctx.guild.emojis
-            if not emojis:
-                await ctx.error_reply(
-                    "No custom emojis found in this guild!\n"
-                    "Use this command to search for custom emojis from my other guilds."
-                )
-            else:
-                emojistrs = ["{}`{id}` {name}".format(
-                    str(e),
-                    id=e.id,
-                    name=e.name
-                ) for e in emojis]
-                blocks = ["\n".join(emojistrs[i:i+10]) for i in range(0, len(emojistrs), 10)]
-                embeds = [discord.Embed(
-                    title="Custom emojis in this guild",
-                    description=block,
-                    colour=discord.Colour.light_grey(),
-                    timestamp=datetime.now()
-                ) for block in blocks]
-                await ctx.pager(embeds, locked=False)
-        return
+            return await ctx.error_reply("Search for emojis using `{}emoji <emojistring>`".format(prefix))
+
+        emojis = ctx.guild.emojis
+            
+        if not emojis:
+            return await ctx.error_reply(
+                "No custom emojis found in this guild!\n"
+                "Use this command to search for custom emojis from my other guilds."
+            )
+                
+        emojistrs = ["{}`{id}` {name}".format(
+            str(e),
+            id=e.id,
+            name=e.name
+        ) for e in emojis]
+        blocks = ["\n".join(emojistrs[i:i+10]) for i in range(0, len(emojistrs), 10)]
+        embeds = [discord.Embed(
+            title="Custom emojis in this guild",
+            description=block,
+            colour=discord.Colour.light_grey(),
+            timestamp=datetime.now()
+        ) for block in blocks]
+        return await ctx.pager(embeds, locked=False)
 
     # If there's no args now that means we're reacting, and default reaction is reeeeeee
-    em_str = ctx.args.lower().strip(":") or "reeeeeeeeeee"
+    em_str = ctx.args.strip(":") or "reeeeeeeeeee"
 
     # Time to find the emoji.
-    emoji = None  # The found emoji, if any. If we can't see the emoji, this might be missing most info.
-    emoji_obj = None  # The found emoji object, which will only exist if we can see the emoji
+    emoji = get_custom_emoji(ctx, em_str)
+    emoji_is_custom = False
+    # Make special chars into unicode representation by normal chars
+    unicode = unicode_char_rep(em_str) if em_str else None
+    # Find match in emojis if there were special chars
+    if unicode:
+        unicode = unicode if unicode in emoji_names_by_unicode else \
+            next((u for u in emoji_names_by_unicode if unicode in u), None)
+    # If there were no special chars, then there's a chance string the representation
+    # was passed as an argument, e.g. ~e 1f468
+    if not unicode:
+        unicode = em_str if em_str in emoji_names_by_unicode else \
+            next((u for u in emoji_names_by_unicode if em_str in u), None)
 
-    if ctx.args.isdigit():
-        # We've been passed an emoji id, presumably
-        emoji_obj = discord.utils.get(ctx.client.emojis, id=int(ctx.args))
-        if not emoji_obj:
-            # Okay, we can't see the emoji in our list.
-            # We can't do much with just an id
-            emoji = {'id': int(ctx.args)}
-            if not enlarged_only or not await emoji_validity(emoji):
-                return await ctx.reply("No emojis with this ID found!")
-        else:
-            # We found the emoji, get the emoji dict
-            emoji = await get_custom_emoji(ctx, emoji_obj.guild.id, emoji_obj.id)
-    elif ctx.args.endswith(">") and ctx.args.startswith("<"):
-        # We've probably been passed an actual emoji (don't count on it)
-        # Extact what's hopefully an id from the string
-        id_str = ctx.args[ctx.args.rfind(":") + 1:-1]
-        if not id_str.isdigit():
-            # This is a.. what then?
-            # Just quit and pretend this never happened
-            await ctx.error_reply("No matching emojis found!")
-        else:
-            # Look for an emoji with this id
-            emoji_obj = discord.utils.get(ctx.client.emojis, id=int(id_str))
-            if not emoji_obj:
-                # Okay, we can't see the emoji in our list.
-                # We'll have to build the emoji manually with name and id.
-                emoji = {
-                    'name': ctx.args[ctx.args.find(":") + 1:ctx.args.rfind(":")].strip(),
-                    'id': id_str,
-                    'animated': ctx.args[1] == 'a'
-                }
-                if not await emoji_validity(emoji):
-                    return await ctx.error_reply("No matching emojis found!")
-            else:
-                # We found the emoji, get the emoji dict
-                emoji = await get_custom_emoji(ctx, emoji_obj.guild.id, emoji_obj.id)
-    elif not all(ord(char) < 128 for char in ctx.args):
-        # There's unicode in this string
-        # TODO: handle unicode emojis
-        # Consider using https://github.com/twitter/twemoji/blob/master/scripts/build.js#L571
-        return await ctx.error_reply("Sorry, I cannot handle built in emojis at this time!")
+    if emoji:
+        emoji_is_custom = True
+    elif unicode:
+        emoji = {
+            "unicode": unicode,
+            "shortcode": emoji_names_by_unicode[unicode],
+            "emoji": emojis_by_name[emoji_names_by_unicode[unicode]],
+            "url": default_emoji_url.format(unicode)
+        }
     else:
-        # Time to do a lookup
-        # First, grab the emojis in the current guild and see if any of them match
-        if not ctx.guild:
-            emojis = None
-        else:
-            emojis = await get_custom_emojis(ctx, ctx.guild.id)
+        name = em_str if em_str in emojis_by_name else \
+            next((n for n in emojis_by_name if em_str in n), None)
 
-        if emojis:
-            # Check exact matches
-            index = next((i for i, emoji in enumerate(emojis) if em_str == emoji['name'].lower()), None)
-            if index is None:
-                # Check inexact matches
-                index = next((i for i, emoji in enumerate(emojis) if em_str in emoji['name'].lower()), None)
-
-            if index is not None:
-                emoji = emojis[index]
-                emoji_obj = discord.utils.get(ctx.client.emojis, id=emoji['id'])
-
-        if not emoji:
-            # Okay, no matches found in the current guild, let's look at everyone else.
-            # Exact matches
-            emoji_obj = discord.utils.get(ctx.client.emojis, name=ctx.args)
-            if not emoji:
-                # Inexact matches
-                emoji_obj = next(filter(lambda e: (em_str in e.name.lower()), ctx.client.emojis), None)
-
-            if emoji_obj:
-                # Great, we found an emoji. Get the emoji dict.
-                emoji = await get_custom_emoji(ctx, emoji_obj.guild.id, emoji_obj.id)
-            else:
-                # We coldn't find the emoji. Nothing we can do with a partial name
-                return await ctx.error_reply("No matching emojis found!")
+        if name:
+            unicode = unicode_char_rep(emojis_by_name[name])
+            emoji = {
+                "unicode": unicode,
+                "shortcode": name,
+                "emoji": emojis_by_name[name],
+                "url": default_emoji_url.format(unicode)
+            }
 
     # Just in case we somehow came out with no emoji
     if emoji is None:
@@ -245,7 +181,9 @@ async def cmd_emoji(ctx: cmdClient, flags):
         # React to the specified message.
         # Wrap this in try/except in case the message was deleted in the meantime somehow.
         try:
-            await ctx.client.http.add_reaction(ctx.ch.id, react_message.id, "{}:{}".format(emoji['name'], emoji['id']))
+            print(emoji, emoji_is_custom)
+            await ctx.client.http.add_reaction(ctx.ch.id, react_message.id, 
+                "{}:{}".format(emoji.name, emoji.id) if emoji_is_custom else emoji['emoji'])
         except discord.NotFound:
             pass
         except discord.HTTPException:
@@ -264,8 +202,7 @@ async def cmd_emoji(ctx: cmdClient, flags):
                 'reaction_add',
                 check=lambda reaction, user: (user != ctx.client.user
                                               and reaction.message == react_message
-                                              and not isinstance(reaction.emoji, str)
-                                              and reaction.emoji.id == int(emoji['id'])),
+                                              and (reaction.emoji.id == int(emoji.id) if emoji_is_custom else str(reaction) == emoji['emoji'])),
                 timeout=60
             )
         except asyncio.TimeoutError:
@@ -273,45 +210,47 @@ async def cmd_emoji(ctx: cmdClient, flags):
 
         # Remove our reaction (if possible)
         try:
-            await react_message.remove_reaction(reaction.emoji, ctx.guild.me if ctx.guild else ctx.client.user)
+            await react_message.remove_reaction(reaction, ctx.guild.me if ctx.guild else ctx.client.user)
         except Exception:
             pass
     elif enlarged_only:
         # We just want to post an embed with the enlarged emoji as the image.
-        elink = read_emoji_link(emoji)
         embed = discord.Embed(colour=discord.Colour.light_grey())
-        await ctx.reply(embed=embed.set_image(url=elink))
+        await ctx.reply(embed=embed.set_image(url=emoji.url if emoji_is_custom else emoji['url']))
     elif info:
         # We want to post the embed with the enlarged emoji, and as much info as we can get.
         prop_list = []
         value_list = []
 
-        if 'name' in emoji:
+        if emoji_is_custom:
             prop_list.append('Name')
-            value_list.append(emoji['name'])
-        if 'id' in emoji:
+            value_list.append(emoji.name)
             prop_list.append('ID')
-            value_list.append("`{}`".format(emoji['id']))
-        prop_list.append('Image link')
-        value_list.append('[Click here]({})'.format(read_emoji_link(emoji)))
-        if 'user' in emoji:
-            prop_list.append('Creator')
-            value_list.append('{username}#{discriminator}'.format(**emoji['user']))
-        if emoji_obj is not None:
-            prop_list.append('Server')
-            value_list.append(emoji_obj.guild.name if emoji_obj.guild else "Unknown")
-
-            created_ago = strfdelta(discord.utils.utcnow() - emoji_obj.created_at)
-            created = emoji_obj.created_at.strftime("%I:%M %p, %d/%m/%Y")
+            value_list.append("`{}`".format(emoji.id))
+            prop_list.append('Image link')
+            value_list.append('[Click here]({})'.format(emoji.url))
+            if emoji.user:
+                prop_list.append('Creator')
+                value_list.append('{username}#{discriminator}'.format(**emoji.user))
+            prop_list.append('Guild')
+            value_list.append(emoji.guild)
+            created_ago = strfdelta(discord.utils.utcnow() - emoji.created_at)
+            created = emoji.created_at.strftime("%I:%M %p, %d/%m/%Y")
             prop_list.append('Created at')
             value_list.append(created)
             prop_list.append('')
             value_list.append(created_ago)
+        else:
+            prop_list = ['Name', 'Unicode', 'String', 'Image link']
+            value_list = [emoji['shortcode'], emoji['unicode'], emoji['emoji'], '[Click here]({})'.format(emoji['url'])]
 
         desc = prop_tabulate(prop_list, value_list)
         embed = discord.Embed(color=discord.Colour.light_grey(), description=desc, title="Emoji info!")
-        embed.set_image(url=read_emoji_link(emoji))
+        embed.set_image(url=emoji.url if emoji_is_custom else emoji['url'])
         await ctx.reply(embed=embed)
     else:
         # Final use case, just post the emoji
-        await ctx.reply("<{a}:{name}:{id}>".format(a='a' if emoji['animated'] else '', **emoji))
+        if emoji_is_custom:
+            await ctx.reply("<{}:{}:{}>".format('a' if emoji.animated else '', emoji.name, emoji.id))
+        else:
+            await ctx.reply(emoji['emoji'])
