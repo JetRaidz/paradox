@@ -1,4 +1,5 @@
 from typing import Optional
+import logging
 import asyncio
 
 import discord
@@ -198,6 +199,51 @@ class starboard_roles(ListData, RoleList, GuildSetting):
     _data_column = "roleid"
 
 
+async def chunk_guild(client, guild):
+    """
+    Guild chunking function that is independent of ctx to allow star roles to work as intended.
+    """
+
+    # The guild isn't chunked, begin
+    if not guild.chunked:
+
+        # Gracefully error if the bot lacks the Members Privileged Intent
+        if not client.intents.members:
+            client.log(f"Failed to chunk guild {guild.name} ({guild.id}) as the bot lacks Members Privileged Intent.",
+                       level=logging.ERROR)
+            return False
+
+        task = asyncio.create_task(guild.chunk())
+        client.log(f"Function starboard requested guild chunking for {guild.name} ({guild.id}).",
+                   level=logging.WARNING)
+
+        try:
+            await asyncio.wait_for(asyncio.shield(task), timeout=1)
+            # The guild has been chunked successfully!
+            client.log(f"{guild.name} ({guild.id}) is now chunked.")
+
+        # Chunking the guild is taking longer than normal, send a message to the author
+        except asyncio.TimeoutError:
+
+            try:
+                await asyncio.wait_for(task, timeout=10)
+
+            # It has taken 10 seconds and there has been no response
+            # Either Discord isn't working or the request was left hanging
+            except asyncio.TimeoutError:
+                client.log(f"Timed out chunking guild {guild.name} ({guild.id}).",
+                           level=logging.WARNING)
+                return False
+
+            else:
+                # The guild has successfully been chunked but took longer than normal
+                client.log(f"{guild.name} ({guild.id}) is now chunked.")
+                return True
+
+    # The guild is already chunked, skip the chunking process
+    return True
+
+
 # Event handler
 async def starboard_listener(client, payload):
     if not payload.guild_id or payload.guild_id not in _Starboard.starboards:
@@ -248,7 +294,11 @@ async def starboard_listener(client, payload):
         if not unstar:
             roles = client.guild_config.star_roles.get(client, payload.guild_id).value
             if roles:
-                users = await reaction.users().flatten()
+                # Request chunking so that reaction user roles can be fetched
+                if not message.guild.chunked:
+                    await chunk_guild(client, message.guild)
+
+                users = [user async for user in reaction.users()]
                 if not any(any(role in user.roles for role in roles) for user in users):
                     # None of the reacting users have a star role
                     unstar = True
@@ -275,12 +325,47 @@ async def starboard_listener(client, payload):
         embed = discord.Embed(colour=discord.Colour.gold(),
                               description=message.content,
                               timestamp=message.created_at)
-        embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+        embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
         embed.add_field(name="Message link", value="[Click to jump to message]({})".format(message.jump_url))
-        if message.embeds and message.embeds[0].url:
-            embed.set_image(url=message.embeds[0].url)
-        elif message.attachments and message.attachments[0].height:
-            embed.set_image(url=message.attachments[0].proxy_url)
+
+        # Check whether the link is marked as a spoiler
+        def link_spoiler(text, link):
+            regex = r"\|\|(.+?)\|\|"
+            spoiler_list = re.findall(regex, text)
+            for spoiler in spoiler_list:
+                if link in spoiler:
+                    return True
+            return False
+
+        # If the starred embed has an image, embed it while respecting spoilers
+        if message.embeds:
+            data = message.embeds[0]
+
+            if data.type == "image" and not link_spoiler(message.content, data.url):
+                embed.set_image(url=data.url)
+
+            elif data.type == "image" and link_spoiler(message.content, data.url):
+                embed.add_field(name="Attachment", value=f"||[Image (spoiler)]({data.url})||", inline=False)
+
+            else:
+                pass
+
+        # If the message has an attachment and it can be displayed, embed it while respecting spoilers
+        elif message.attachments:
+            data = message.attachments[0]
+            filename = discord.utils.escape_markdown(data.filename)
+            spoiler = data.is_spoiler()
+
+            if not spoiler and data.url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+                embed.set_image(url=data.url)
+
+            # Link the file if it has a spoiler as images can't be marked as spoilers in embeds
+            elif spoiler:
+                embed.add_field(name='Attachment', value=f'||[{filename}]({data.url})||', inline=False)
+
+            # Link any file that isn't an image
+            else:
+                embed.add_field(name='Attachment', value=f'[{filename}]({data.url})', inline=False)
 
         # Send or update the starboard message
         sent = False
