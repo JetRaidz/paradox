@@ -114,9 +114,11 @@ async def chunk_guild(ctx, *args, **kwargs):
             # It has taken 10 seconds and there has been no response
             # Either Discord isn't working or the request was left hanging
             except asyncio.TimeoutError:
+                client.log(f"Timed out chunking guild {guild.name} ({guild.id}).",
+                           level=logging.WARNING)
                 progress = await progress.edit(content="Failed to load your guild. Please try again in a few minutes.")
                 return False
-            
+
             else:
                 # The guild has successfully been chunked but took longer than normal
                 ctx.log(f"{ctx.guild.name} ({ctx.guild.id}) is now chunked.")
