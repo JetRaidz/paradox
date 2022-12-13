@@ -120,6 +120,10 @@ async def cmd_emoji(ctx: cmdClient, flags):
 
     if emoji:
         emoji_is_custom = True
+
+        # Emoji currently not usable
+        if not emoji.available:
+            return await ctx.error_reply("Emoji is currently unavailable!")
     elif unicode:
         emoji = {
             "unicode": unicode,
