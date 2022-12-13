@@ -196,7 +196,7 @@ async def offer_delete(ctx: Context, *to_delete, timeout=300):
             if user == ctx.guild.me:
                 return False
             return ((user == ctx.author)
-                    or (user.permissions_in(ctx.ch).manage_messages)
+                    or (ctx.ch.permissions_for(user).manage_messages)
                     or (modrole and modrole in user.roles))
     else:
         def check(reaction, user):

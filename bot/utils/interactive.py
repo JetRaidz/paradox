@@ -320,9 +320,9 @@ async def _pager(ctx, out_msg, pages, locked, start_page=0):
         # Edit the message with the new page
         active_page = pages[page]
         if isinstance(active_page, discord.Embed):
-            await out_msg.edit(embed=active_page)
+            out_msg = await out_msg.edit(embed=active_page)
         else:
-            await out_msg.edit(content=active_page)
+            out_msg = await out_msg.edit(content=active_page)
 
     # Clean up by removing the reactions
     try:
@@ -426,7 +426,7 @@ async def ask(ctx, msg, timeout=30, use_msg=None, add_hints=True, del_on_timeout
 
     offer_msg = use_msg or await ctx.reply(out)
     if use_msg:
-        await use_msg.edit(content=msg)
+        use_msg = await use_msg.edit(content=msg)
 
     result_msg = await ctx.listen_for(["y", "yes", "n", "no"], timeout=timeout)
 

@@ -159,3 +159,27 @@ async def cmd_support(ctx):
         Sends the invite link to my support guild.
     """
     await ctx.reply("Join my support server: {}".format(ctx.client.app_info["support_guild"]))
+
+
+@module.cmd("donate",
+            desc="Donate to help keep the bot running")
+async def cmd_donate(ctx):
+    """
+    Usage``:
+        {prefix}donate
+    Description:
+        Support the developers by donating to help cover the costs to run the servers.
+        Current methods are Patreon, PayPal, and Wise.
+    """
+    patreon = "<https://patreon.com/texit>"
+    paypal = "<https://www.paypal.com/paypalme/puerosola>"
+    wise = "<https://wise.com/share/adamw2287>"
+
+    await ctx.reply("Help support the development of the bots and cover server costs "
+                    "by donating through one of the following services:\n"
+                    f"Patreon: {patreon}\n"
+                    f"PayPal: {paypal}\n"
+                    f"Wise: {wise}\n"
+                    "Supporting us through Patreon will grant you exclusive perks in our support server.\n"
+                    "You will also be able to use our premium features which will be added in a future update.\n"
+                    "Thank you for your support ❤️")
