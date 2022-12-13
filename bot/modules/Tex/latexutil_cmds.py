@@ -162,6 +162,7 @@ class MarkdownConverter(object):
             return ''
         return '%s**%s**%s' % (prefix, text, suffix)
 
+
 def search_n_parse(soup: BeautifulSoup):
     title = soup.find("h1")
 
@@ -202,7 +203,7 @@ def search_n_parse(soup: BeautifulSoup):
                     link.insert_after(", ")
                 md_link = "[{}]({})".format(
                     link.text,
-                    urllib.parse.urljoin(ctan_url,link.attrs["href"])
+                    urllib.parse.urljoin(ctan_url, link.attrs["href"])
                 )
                 tds[1].a.replace_with(md_link)
 
@@ -210,6 +211,7 @@ def search_n_parse(soup: BeautifulSoup):
         value_list.append(tds[1].text.rstrip(", "))
 
     return (title, emb_desc, prop_list, value_list)
+
 
 @module.cmd("texdoc",
             desc="Searches the [texdoc](http://texdoc.net)",
@@ -233,6 +235,7 @@ async def cmd_texdoc(ctx):
         ctx.args,
         texdoc_url.format(urllib.parse.quote_plus(ctx.args))
     ))
+
 
 @module.cmd("ctan",
             desc="Searches the [ctan](https://ctan.org)",
@@ -296,18 +299,14 @@ async def cmd_ctan(ctx):
                 stats = stats[:idx].strip()
 
             embed.add_field(name="No results found!", value=stats)
-            return await out_msg.edit(
-                    content="",
-                    embed=embed
-                )
+            out_msg = await out_msg.edit(content="", embed=embed)
+            return
 
         urls = soup.find_all("a", attrs={"class": "hit-type-pkg"})
         if not urls:
             embed.add_field(name="No results found!", value="The search found no matching packages on CTAN.")
-            return await out_msg.edit(
-                    content="",
-                    embed=embed
-                )
+            out_msg = await out_msg.edit(content="", embed=embed)
+            return
 
         md_links = []
         for url in urls:
@@ -318,15 +317,12 @@ async def cmd_ctan(ctx):
             md_links.append(md_link)
         field_value = "\n".join(md_links)
         embed.add_field(name=stats, value=field_value)
-        return await out_msg.edit(
-                content="",
-                embed=embed
-            )
+        out_msg = await out_msg.edit(content="", embed=embed)
+        return
 
     if not title:
-        return await out_msg.edit(
-            content=f"I couldn't find a package named `{ctx.args}`!"
-        )
+        out_msg = await out_msg.edit(content=f"I couldn't find a package named `{ctx.args}`!")
+        return
 
     if prop_list:
         table = prop_tabulate(prop_list, value_list)
@@ -351,7 +347,5 @@ async def cmd_ctan(ctx):
             )
     embed.set_thumbnail(url=lion_url)
 
-    return await out_msg.edit(
-        content="",
-        embed=embed
-    )
+    out_msg = await out_msg.edit(content="", embed=embed)
+    return

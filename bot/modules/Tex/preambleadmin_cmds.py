@@ -122,7 +122,11 @@ async def user_admin(ctx, userid):
 
     if result == 0:
         # Show the preamble
-        preamble = current_preamble['preamble']
+        if current_preamble:
+            preamble = current_preamble["preamble"]
+        else:
+            preamble = None
+
         if not preamble:
             await ctx.reply("This user doesn't have a custom preamble set!")
         else:
@@ -252,8 +256,8 @@ async def guild_admin(ctx, guildid):
     Shows a preamble management menu for a single guild.
     Menu:
         1. Show current preamble
-        2. Set preamble
-        3. Reset preamble
+        2. Set preamble (manager)
+        3. Reset preamble (manager)
     """
     if not await is_manager.run(ctx):
         return await ctx.error_reply("This can only be used by bot managers.")

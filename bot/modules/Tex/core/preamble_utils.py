@@ -74,7 +74,6 @@ def tex_pagination(text, basetitle="", header=None, timestamp=True,
         desc = "{}\n{}".format(header, block) if header else block
         embed = discord.Embed(title=basetitle,
                               colour=colour,
-                              author=author,
                               description=desc,
                               timestamp=time)
         embed.set_footer(text="{} Page {}/{}".format(footer, i+1, blocknum))
@@ -418,17 +417,17 @@ async def approve_submission(ctx, userid, manager, reason=None):
             # Send message as-is
             pass
         elif resp.startswith('c'):
-            await preview.edit(content="Preamble approval cancelled on manager request.")
+            preview = await preview.edit(content="Preamble approval cancelled on manager request.")
             raise UserCancelled("Cancelling preamble approval.")
         elif resp.startswith('y'):
             # Ask for the new field
             try:
                 result = await ctx.input("Please enter the additional approval message, or `c` to cancel!", timeout=600)
             except ResponseTimedOut:
-                await preview.edit(content="Preamble approval cancelled due to query timeout.")
+                preview = await preview.edit(content="Preamble approval cancelled due to query timeout.")
                 raise ResponseTimedOut("Query timed out, aborting preamble approval.") from None
             if result.lower() in ['c', 'cancel']:
-                await preview.edit(content="Preamble approval cancelled on manager request.")
+                preview = await preview.edit(content="Preamble approval cancelled on manager request.")
                 raise UserCancelled("Cancelling preamble approval.")
 
             # Update the embed with the new field
@@ -437,7 +436,7 @@ async def approve_submission(ctx, userid, manager, reason=None):
     # Approve the preamble
     pending_info = ctx.client.data.user_pending_preambles.select_where(userid=userid)
     if not pending_info:
-        await preview.edit(content="User no longer has a pending preamble to approve! Cancelling.")
+        preview = await preview.edit(content="User no longer has a pending preamble to approve! Cancelling.")
         raise SafeCancellation
 
     current_info = ctx.client.data.user_latex_preambles.select_where(userid=userid)
@@ -464,7 +463,7 @@ async def approve_submission(ctx, userid, manager, reason=None):
     )
 
     # Update the preview
-    await preview.edit(
+    preview = await preview.edit(
         content="Approved preamble, sending approval message {}".format(ctx.client.conf.emojis.getemoji("loading")),
         embed=embed
     )
@@ -481,17 +480,17 @@ async def approve_submission(ctx, userid, manager, reason=None):
     try:
         await user.send(embed=embed, content=user.mention)
     except discord.Forbidden:
-        await preview.edit(
+        preview = await preview.edit(
             content=("Approved, but Discord didn't let me DM the user. "
                      "I might not be able to see them (no shared guilds), or they might have blocked me.")
         )
     except Exception as e:
-        await preview.edit(
+        preview = await preview.edit(
             content=("Approved, but something unexpected occurred while sending the approval message.")
         )
         raise e
     else:
-        await preview.edit(
+        preview = await preview.edit(
             content=("Preamble approved! Good work, <@{}>!".format(manager.id))
         )
     return True
@@ -522,10 +521,10 @@ async def deny_submission(ctx, userid, manager, reason=None):
         try:
             result = await ctx.input(preview, delete_after=False, timeout=600)
         except ResponseTimedOut:
-            await preview.edit(content="Preamble rejection cancelled due to query timeout.")
+            preview = await preview.edit(content="Preamble rejection cancelled due to query timeout.")
             return None
         if result.lower() in ['c', 'cancel']:
-            await preview.edit(content="Preamble rejection cancelled on manager request.")
+            preview = await preview.edit(content="Preamble rejection cancelled on manager request.")
             raise UserCancelled("Cancelling preamble rejection.")
 
         # Update the embed with the new field
@@ -540,7 +539,7 @@ async def deny_submission(ctx, userid, manager, reason=None):
     # Deny the preamble
     pending_info = ctx.client.data.user_pending_preambles.select_where(userid=userid)
     if not pending_info:
-        await preview.edit(content="User no longer has a pending preamble to deny! Cancelling.")
+        preview = await preview.edit(content="User no longer has a pending preamble to deny! Cancelling.")
         raise SafeCancellation
 
     ctx.client.data.user_pending_preambles.delete_where(userid=userid)
@@ -559,7 +558,7 @@ async def deny_submission(ctx, userid, manager, reason=None):
     )
 
     # Update the preview
-    await preview.edit(
+    preview = await preview.edit(
         content="Denied preamble, sending rejection message {}".format(ctx.client.conf.emojis.getemoji("loading")),
         embed=embed
     )
@@ -570,22 +569,22 @@ async def deny_submission(ctx, userid, manager, reason=None):
         try:
             user = await ctx.client.fetch_user(userid)
         except discord.NotFound:
-            await preview.edit(content="Denied, but user not known to Discord, couldn't send the rejection message.")
+            preview = await preview.edit(content="Denied, but user not known to Discord, couldn't send the rejection message.")
 
     try:
         await user.send(embed=embed, content=user.mention)
     except discord.Forbidden:
-        await preview.edit(
+        preview = await preview.edit(
             content=("Denied, but Discord didn't let me DM the user. "
                      "I might not be able to see them (no shared guilds), or they might have blocked me.")
         )
     except Exception as e:
-        await preview.edit(
+        preview = await preview.edit(
             content=("Denied, but something unexpected occurred while sending the rejection message.")
         )
         raise e
     else:
-        await preview.edit(
+        preview = await preview.edit(
             content=("Preamble denied! Good work, <@{}>!".format(manager.id))
         )
     return True

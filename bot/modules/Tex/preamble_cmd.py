@@ -79,6 +79,12 @@ async def cmd_preamble(ctx, flags):
     # Get the whitelisted packages
     whitelisted_packages = []
 
+    if ctx.args.lower() in ["reset", "retract", "add", "remove", "revert", "usepackage", "replace", "preset"]:
+        return await ctx.reply("Warning: Flags require two hyphens (`--`) with no spaces in between "
+                               "in order to be registered correctly.\n"
+                               "Your command should look something like this: "
+                               f"`{ctx.best_prefix()}preamble --add % code here`")
+
     # Handle resetting the preamble
     if flags["reset"]:
         # Handle not having a preamble
