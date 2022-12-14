@@ -26,7 +26,8 @@ async def log_left_guild(client: cmdClient, guild: discord.Guild):
                           colour=discord.Colour.red(),
                           timestamp=datetime.now())
     embed.set_author(name="Left guild!")
-    embed.set_thumbnail(url=guild.icon_url)
+    if guild.icon:
+        embed.set_thumbnail(url=guild.icon.url)
 
     # Add more specific information about the guild
     embed.add_field(name="Owner", value="{0.name} (ID: {0.id})".format(guild.owner), inline=False)
@@ -41,7 +42,6 @@ async def log_left_guild(client: cmdClient, guild: discord.Guild):
 
 async def log_joined_guild(client, guild):
     owner = guild.owner
-    icon = guild.icon.url
 
     bots = 0
     known = 0
@@ -82,7 +82,8 @@ async def log_joined_guild(client, guild):
         timestamp=datetime.now()
     )
     embed.set_author(name="Joined guild!")
-    embed.set_thumbnail(url=icon)
+    if guild.icon:
+        embed.set_thumbnail(url=guild.icon.url)
 
     embed.add_field(name="Owner", value="{0} (ID: {0.id})".format(owner), inline=False)
     embed.add_field(name="Created at", value="{}".format(created), inline=False)
