@@ -41,7 +41,7 @@ async def log_left_guild(client: cmdClient, guild: discord.Guild):
 
 async def log_joined_guild(client, guild):
     owner = guild.owner
-    icon = guild.icon_url
+    icon = guild.icon.url
 
     bots = 0
     known = 0
