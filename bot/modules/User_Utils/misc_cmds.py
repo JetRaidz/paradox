@@ -15,7 +15,8 @@ from .module import utils_module as module
 from resources.colours import XTERM256_COLOURS
 
 
-@module.cmd("echo", desc="Sends what you tell me to!")
+@module.cmd("echo",
+            desc="Sends what you tell me to!")
 async def cmd_echo(ctx):
     """
     Usage``:
@@ -32,7 +33,8 @@ async def cmd_echo(ctx):
     )
 
 
-@module.cmd("secho", desc="Deletes your message and echos it.")
+@module.cmd("secho",
+            desc="Deletes your message and echos it.")
 async def cmd_secho(ctx):
     """
     Usage``:
@@ -57,7 +59,8 @@ async def cmd_secho(ctx):
     )
 
 
-@module.cmd("jumpto", desc="Finds the given message ID and generates a jump link.")
+@module.cmd("jumpto",
+            desc="Finds the given message ID and generates a jump link.")
 @in_guild()
 async def cmd_jumpto(ctx):
     """
@@ -110,7 +113,9 @@ async def cmd_jumpto(ctx):
         await ctx.reply(embed=embed)
 
 
-@module.cmd("quote", desc="Quotes a message by ID.", flags=["a", "r"])
+@module.cmd("quote",
+            desc="Quotes a message by ID.",
+            flags=["a", "r"])
 @in_guild()
 async def cmd_quote(ctx, flags):
     """
@@ -201,11 +206,9 @@ async def cmd_quote(ctx, flags):
             await ctx.pager(embeds, locked=False)
 
 
-@module.cmd(
-    "invitebot",
-    desc="Generates a bot invite link for a given bot or botid.",
-    aliases=["ibot"],
-)
+@module.cmd("invitebot",
+            desc="Generates a bot invite link for a given bot or botid.",
+            aliases=["ibot"])
 @chunk_guild()
 async def cmd_invitebot(ctx):
     """
@@ -253,12 +256,10 @@ async def cmd_invitebot(ctx):
         )
 
 
-@module.cmd(
-    "piggybank",
-    desc="Keep track of money added towards a goal.",
-    aliases=["bank"],
-    disabled=True,
-)
+@module.cmd("piggybank",
+            desc="Keep track of money added towards a goal.",
+            aliases=["bank"],
+            disabled=True)
 async def cmd_piggybank(ctx):
     """
     Sorry!:
@@ -360,18 +361,16 @@ def nearest_xterm256(colour: str) -> tuple[int, str]:
     return min(
         XTERM256_COLOURS.items(),
         key=lambda x: sum(
-            (int(x[1][i + 1 : i + 3], 16) - int(colour[i : i + 2], 16)) ** 2
+            (int(x[1][i + 1: i + 3], 16) - int(colour[i: i + 2], 16)) ** 2
             for i in range(0, 6, 2)
         ),
     )
 
 
-@module.cmd(
-    "colour",
-    desc="Displays information about a colour.",
-    aliases=["color"],
-    flags=["hex", "rgb", "xterm"],
-)
+@module.cmd("colour",
+            desc="Displays information about a colour.",
+            aliases=["color"],
+            flags=["hex", "rgb", "xterm"])
 async def cmd_colour(ctx, flags):
     """
     Usage``:
