@@ -310,7 +310,7 @@ async def cmd_query(ctx, flags):
                 "Perhaps try rephrasing your question?\n{}"
             ).format(link)
         embed = discord.Embed(description=desc)
-        embed.set_footer(icon_url=ctx.author.avatar.url, text="Requested by {}".format(ctx.author))
+        embed.set_footer(icon_url=ctx.author.display_avatar, text="Requested by {}".format(ctx.author))
         embed.set_thumbnail(url=WOLF_ICON)
         temp_msg = await ctx.safe_delete_msgs(temp_msg)
         await ctx.offer_delete(await ctx.reply(embed=embed))
@@ -319,7 +319,7 @@ async def cmd_query(ctx, flags):
     if flags["text"]:
         fields = await pods_to_textdata(result["queryresult"]["pods"])
         embed = discord.Embed(description=link)
-        embed.set_footer(icon_url=ctx.author.avatar.url, text="Requested by {}".format(ctx.author))
+        embed.set_footer(icon_url=ctx.author.display_avatar, text="Requested by {}".format(ctx.author))
         embed.set_thumbnail(url=WOLF_ICON)
         emb_add_fields(embed, fields)
         temp_msg = await ctx.safe_delete_msgs(temp_msg)
@@ -336,7 +336,7 @@ async def cmd_query(ctx, flags):
     embed.set_author(name="Results provided by WolframAlpha",
                      icon_url=WOLF_SMALL_ICON,
                      url="http://www.wolframalpha.com/pro/")
-    embed.set_footer(icon_url=ctx.author.avatar.url, text="Requested by {}".format(ctx.author))
+    embed.set_footer(icon_url=ctx.author.display_avatar, text="Requested by {}".format(ctx.author))
     embed.set_thumbnail(url=WOLF_ICON)
     embed.set_image(url="attachment://wolf.png")
     # embed.set_image(url="https://content.wolfram.com/uploads/sites/10/2016/12/WolframAlphaLogo_Web_sanstagline-med.jpg")

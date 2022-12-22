@@ -50,9 +50,9 @@ async def join_logger(client, member):
     )
     embed.set_author(
         name="New {usertype} joined!".format(usertype='bot' if member.bot else 'user'),
-        url=member.avatar
+        url=member.display_avatar
     )
-    embed.set_thumbnail(url=member.avatar)
+    embed.set_thumbnail(url=member.display_avatar)
 
     try:
         await joinlog.send(embed=embed)
@@ -85,7 +85,7 @@ async def departure_logger(client, payload):
     # Extract member information
     name = "{} ({})".format(member.display_name, member.mention)
     colour = discord.Colour.red()
-    avatar = member.avatar
+    avatar = member.display_avatar
 
     if isinstance(member, discord.Member):
         joined = int(round(member.joined_at.timestamp()))

@@ -189,7 +189,7 @@ async def cmd_quote(ctx, flags):
             if not flags["a"]:
                 embed.set_author(
                     name="{user.name}".format(user=message.author),
-                    icon_url=message.author.avatar.url,
+                    icon_url=message.author.display_avatar,
                 )
             embed.set_footer(text="Sent in #{}".format(message.channel.name))
             if message.attachments:

@@ -325,7 +325,7 @@ async def starboard_listener(client, payload):
         embed = discord.Embed(colour=discord.Colour.gold(),
                               description=message.content,
                               timestamp=message.created_at)
-        embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
+        embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
         embed.add_field(name="Message link", value="[Click to jump to message]({})".format(message.jump_url))
 
         # Check whether the link is marked as a spoiler

@@ -46,7 +46,7 @@ async def cmd_profile(ctx):
 
     embed = discord.Embed(type="rich", color=user.colour) \
         .set_author(name="{user} ({user.id})".format(user=user),
-                    icon_url=user.avatar_url)
+                    icon_url=user.display_avatar)
     if badges:
         embed.add_field(name="Badges", value=badges, inline=False)
 

@@ -70,7 +70,7 @@ class NoteTicket(Ticket):
         # Moderator information
         mod_user = self._client.get_user(self.modid)
         if mod_user is not None:
-            embed.set_footer(text="Created by: {}".format(mod_user), icon_url=mod_user.avatar_url)
+            embed.set_footer(text="Created by: {}".format(mod_user), icon_url=mod_user.display_avatar)
         else:
             embed.set_footer(text="Created by: {}".format(self.modid))
 

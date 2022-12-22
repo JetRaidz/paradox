@@ -44,7 +44,7 @@ async def cmd_feedback(ctx: Context):
     # Build the feedback embed
     embed = discord.Embed(title="Feedback", color=ParaCC["blue"], timestamp=datetime.utcnow(), description=response)
     embed.set_author(name="{} ({})".format(ctx.author, ctx.author.id),
-                     icon_url=ctx.author.avatar.url)
+                     icon_url=ctx.author.display_avatar)
     embed.set_footer(text=datetime.utcnow().strftime("Sent from {}".format(ctx.guild.name if ctx.guild else "DM")))
 
     # Send a preview and confirm with the user

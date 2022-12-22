@@ -41,7 +41,15 @@ async def cmd_about(ctx: Context):
 
     # Current developers
     current_devs = ctx.client.app_info["dev_list"]
-    dev_str = ", ".join(str(ctx.client.get_user(devid) or devid) for devid in current_devs)
+    devs = []
+    for devid in current_devs:
+        try:
+            dev = await ctx.client.fetch_user(devid)
+            devs.append(str(dev))
+        except Exception:
+            devs.append(str(devid))
+
+    dev_str = ", ".join(devs)
     table_fields.append(("Developers", dev_str))
 
     # Shards, guilds, and members

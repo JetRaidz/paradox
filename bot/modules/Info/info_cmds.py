@@ -229,11 +229,11 @@ async def cmd_userinfo(ctx: Context):
 
     embed = discord.Embed(color=colour, description=desc)
     embed.set_author(name=f"{user} ({user.id})",
-                     icon_url=user.avatar)
+                     icon_url=user.display_avatar)
     if serverav:
         embed.set_thumbnail(url=serverav)
     else:
-        embed.set_thumbnail(url=user.avatar)
+        embed.set_thumbnail(url=user.display_avatar)
 
     embed.add_field(name="Roles", value=roles, inline=False)
 
@@ -570,9 +570,9 @@ async def cmd_avatar(ctx: Context, flags):
             return await ctx.error_reply(f"{user} has no server avatar set.")
 
     else:
-        avatar = user.avatar 
+        avatar = user.display_avatar
 
-    desc = f"Click [here]({avatar}) to view the {'GIF' if user.avatar.is_animated() else 'image'}."
+    desc = f"Click [here]({avatar}) to view the {'GIF' if user.display_avatar.is_animated() else 'image'}."
     embed = discord.Embed(colour=colour, description=desc)
     embed.set_author(name=f"{user}'s Avatar")
     embed.set_image(url=avatar)
