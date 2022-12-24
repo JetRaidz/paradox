@@ -267,6 +267,7 @@ async def cmd_userinfo(ctx: Context):
             aliases=["serverinfo", "sinfo", "si", "gi"],
             flags=["icon"])
 @in_guild()
+@chunk_guild()
 async def cmd_guildinfo(ctx: Context, flags):
     """
     Usage``:
@@ -290,7 +291,7 @@ async def cmd_guildinfo(ctx: Context, flags):
         "low": "Must have a verified email",
         "medium": "Must be registered for more than 5 minutes",
         "high": "Must be a member for more than 10 minutes",
-        "extreme": "Must have a verified phone number",
+        "highest": "Must have a verified phone number",
     }
 
     verif_level = guild.verification_level.name
