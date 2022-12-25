@@ -37,14 +37,13 @@ async def latex_message_parser(client, message):
     # Check we can write in the channel and we're allowed to send latex there
     if message.guild:
         my_permissions = message.channel.permissions_for(message.guild.me)
-        if isinstance(message.channel, discord.Thread):
-            # If the bot lacks send messages in the parent channel, attach files is implicitly denied
-            if my_permissions.send_messages_in_threads and not my_permissions.attach_files:
-                return await message.channel.send("I can't compile LaTeX in this thread as I lack the `SEND_MESSAGES` " 
-                                                  f"permission in the origin channel (<#{message.channel.parent.id}>)! "
-                                                  "Please check my permissions and try again.")
+        is_thread = isinstance(message.channel, discord.Thread)
+
+        if is_thread:
+            if not my_permissions.send_messages_in_threads:
+                return
         else:
-            if not (my_permissions.send_messages and my_permissions.attach_files):
+            if not my_permissions.send_messages:
                 return
 
         if lguild.latex_channels:
