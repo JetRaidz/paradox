@@ -98,27 +98,30 @@ class role_persistence_ignores(ListData, RoleList, GuildSetting):
 
 
 # Define event handlers
-async def store_roles(client, member):
+async def store_roles(client, payload):
     """
     Store member roles when the member leaves.
     """
-    # Collect a list of member roles
-    role_list = [role.id for role in member.roles]
+    member = payload.user
 
-    # Don't update if the member joined in the last 10 seconds, to allow time for autoroles and role addition
-    if discord.utils.utcnow().timestamp() - member.joined_at.timestamp() < 10:
-        return
+    # Collect a list of member roles
+    role_list = []
+    if isinstance(member, discord.Member):
+        role_list = [role.id for role in member.roles]
+
+        # Don't update if the member joined in the last 10 seconds, to allow time for autoroles and role addition
+        if discord.utils.utcnow().timestamp() - member.joined_at.timestamp() < 10:
+            return
 
     # Delete the stored roles associated to this member
-    client.data.member_stored_roles.delete_where(guildid=member.guild.id, userid=member.id)
-
+    client.data.member_stored_roles.delete_where(guildid=payload.guild_id, userid=member.id)
     # TODO: This is asking for some nasty clashes between different apps
     # We probably want to make it a db transaction, i.e. lock the table.
 
     # Insert the new roles if there are any
     if role_list:
         client.data.member_stored_roles.insert_many(
-            *((member.guild.id, member.id, role) for role in role_list),
+            *((payload.guild_id, member.id, role) for role in role_list),
             insert_keys=('guildid', 'userid', 'roleid')
         )
 
@@ -179,7 +182,7 @@ async def restore_roles(client, member):
 
 @module.init_task
 def attach_restore_roles(client):
-    client.add_after_event('member_remove', store_roles)
+    client.add_after_event('raw_member_remove', store_roles)
     client.add_after_event('member_join', restore_roles)
 
 

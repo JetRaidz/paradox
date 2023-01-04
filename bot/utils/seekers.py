@@ -280,10 +280,6 @@ async def find_member(ctx, userstr, interactive=False, collection=None, collecti
     if not ctx.guild:
         raise InvalidContext("Attempt to use find_member outside of a guild.")
 
-    # The guild should be chunked before calling this util, error if it's not chunked
-    if not ctx.guild.chunked:
-        raise InvalidContext("Current guild is not chunked.")
-
     if userstr == "":
         raise ValueError("User string passed to find_member was empty.")
 

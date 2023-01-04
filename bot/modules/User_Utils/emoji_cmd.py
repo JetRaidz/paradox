@@ -13,27 +13,36 @@ from .emojis import emojis_by_name, emoji_names_by_unicode
 
 default_emoji_url = "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/{}.png"
 
+
 def get_custom_emoji(ctx, emoji_str):
     # Not valid emoji name or emoji id
     # Cross fingers and hope it is of form a:name:id, <a:name:id>, name:id, or <:name:id>
     # Give up otherwise
     if not re.match(r"^[A-Za-z0-9_]+$", emoji_str):
         id = re.search(r"\d+", emoji_str)
-        if not id: return None
+        if not id:
+            return None
         id = int(id.group())
         return discord.utils.get(ctx.client.emojis, id=id)
 
     # Not valid emoji id
     # Priority: guild exact match > guild inexact match > exact match > inexact match
     if not emoji_str.isdigit():
-        return discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.guild.emojis) or \
-            discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.guild.emojis) or \
-            discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.client.emojis) or \
-            discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.client.emojis)
+        if ctx.guild:
+            return discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.guild.emojis) or \
+                discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.guild.emojis) or \
+                discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.client.emojis) or \
+                discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.client.emojis)
+        else:
+            return discord.utils.find(lambda e: emoji_str.lower() == e.name.lower(), ctx.client.emojis) or \
+                discord.utils.find(lambda e: emoji_str.lower() in e.name.lower(), ctx.client.emojis)
 
     # Valid emoji id
-    return discord.utils.get(ctx.guild.emojis, id=int(emoji_str)) or \
-        discord.utils.get(ctx.client.emojis, id=int(emoji_str))
+    if ctx.guild:
+        return discord.utils.get(ctx.guild.emojis, id=int(emoji_str)) or \
+            discord.utils.get(ctx.client.emojis, id=int(emoji_str))
+    else:
+        return discord.utils.get(ctx.client.emojis, id=int(emoji_str))
 
 
 def unicode_char_rep(uni):
@@ -152,12 +161,11 @@ async def cmd_emoji(ctx: cmdClient, flags):
     # Start handling the different output cases.
     if react_only:
         react_message = None
-        if not ctx.guild or not ctx.ch.permissions_for(ctx.author).add_reactions:
+        if ctx.guild and not ctx.ch.permissions_for(ctx.author).add_reactions:
             return await ctx.error_reply("You do not have permissions to add reactions here!")
 
-        if ctx.guild:
-            if not ctx.ch.permissions_for(ctx.guild.me).add_reactions:
-                return await ctx.error_reply("I do not have permissions to add reactions here!")
+        if ctx.guild and not ctx.ch.permissions_for(ctx.guild.me).add_reactions:
+            return await ctx.error_reply("I do not have permissions to add reactions here!")
 
         # If a messageid to react to was specified, get it. Otherwise get the previous message in the channel.
         if flags['to']:

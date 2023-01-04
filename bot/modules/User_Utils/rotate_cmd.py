@@ -131,8 +131,9 @@ async def _rotate(ctx, im, amount, name):
                 except asyncio.TimeoutError:
                     try:
                         me = ctx.guild.me if ctx.guild else ctx.client.user
-                        await out_msg.remove_reaction(emoji_rotate_cw, me)
-                        await out_msg.remove_reaction(emoji_rotate_ccw, me)
+                        if out_msg:
+                            await out_msg.remove_reaction(emoji_rotate_cw, me)
+                            await out_msg.remove_reaction(emoji_rotate_ccw, me)
                     except discord.NotFound:
                         pass
                     except discord.HTTPException:
