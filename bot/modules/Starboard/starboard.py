@@ -1,6 +1,7 @@
 from typing import Optional
 import logging
 import asyncio
+import re
 
 import discord
 
