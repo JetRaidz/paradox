@@ -32,3 +32,4 @@ Use `{prefix}list` to see all my commands and `{prefix}help cmd` to get detailed
 If you still have any questions, requests, comments, or other feedback, please let us know with the `{prefix}feedback` command or join our friendly support server at {support}
 
 You can invite me at {invite}. Also, if you really like me and would like to help keep me going, I greatly appreciate donations at <{donate}>.
+Privacy policy: {privacy}

@@ -43,7 +43,8 @@ async def cmd_help(ctx: Context):
                                                           user=ctx.author,
                                                           invite=ctx.client.app_info["invite_link"],
                                                           support=ctx.client.app_info["support_guild"],
-                                                          donate=ctx.client.app_info["donate_link"])
+                                                          donate=ctx.client.app_info["donate_link"],
+                                                          privacy=ctx.client.app_info["privacy_policy"])
         help_filename = ctx.client.app_info.get("help_file", None)
         help_file = discord.File(help_filename) if help_filename else None
         help_embed = ctx.client.app_info.get("help_embed", None)

@@ -111,9 +111,10 @@ async def cmd_about(ctx: Context):
     info = ctx.client.app_info["info_str"].format(prefix=ctx.best_prefix())
 
     # Create link string for bottom of description
-    links = ("[Support Server]({}), [Invite Me]({}), [Help keep me running!]({})".format(
+    links = ("[Support Server]({}), [Invite Me]({}), [Privacy Policy]({}), [**Help keep me running!**]({})".format(
         ctx.client.app_info["support_guild"],
         ctx.client.app_info["invite_link"],
+        ctx.client.app_info["privacy_policy"],
         ctx.client.app_info["donate_link"]
     ))
 

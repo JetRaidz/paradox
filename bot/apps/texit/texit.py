@@ -16,6 +16,7 @@ info = {
     "invite_link": "http://texit.paradoxical.pw",
     "donate_link": "https://www.patreon.com/texit",
     "support_guild": "https://discord.gg/FY9jH7M",
+    "privacy_policy": "https://docs.paradoxical.pw/privacy.pdf",
     "brief": True,
     "app": "texit",
     "help_str": help_str,

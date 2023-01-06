@@ -16,6 +16,7 @@ def load_into(client):
             "invite_link": "http://invite.paradoxical.pw",
             "donate_link": "https://www.patreon.com/texit",
             "support_guild": "https://discord.gg/FY9jH7M",
+            "privacy_policy": "https://docs.paradoxical.pw/privacy.pdf",
             "brief": False,
             "app": "",
             "help_str": help_str}
