@@ -11,4 +11,5 @@ If you wish to view the entire list of commands, use `{prefix}list`.
 I can be invited at <http://invite.paradoxical.pw> and if you love me, please consider donating to my developers to cover server costs and support future development at <{donate}>.
 
 Need help with Paradøx? Head to our server for support or if you're just looking for a nice chat! <{support}>
-Privacy policy: {privacy}
+
+**By using me or inviting me to your server, you agree to the following privacy policy:** {privacy}
