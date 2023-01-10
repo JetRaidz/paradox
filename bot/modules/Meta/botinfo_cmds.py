@@ -52,6 +52,11 @@ async def cmd_about(ctx: Context):
     dev_str = ", ".join(devs)
     table_fields.append(("Developers", dev_str))
 
+    mems = 0
+    for g in ctx.client.guilds:
+        if g._member_count:
+            mems += g._member_count
+
     # Shards, guilds, and members
     if ctx.client.shard_count > 1:
         shard_str = "{} of {}".format(ctx.client.shard_id, ctx.client.shard_count)
@@ -63,14 +68,11 @@ async def cmd_about(ctx: Context):
         )
         table_fields.append(("Shard guilds", guild_str))
 
-        member_str = "{} (~{} total)".format(
-            len(list(ctx.client.get_all_members())),
-            ctx.client.shard_count * len(list(ctx.client.get_all_members()))
-        )
+        member_str = "{} (~{} total)".format(mems, ctx.client.shard_count * mems)
         table_fields.append(("Shard members", member_str))
     else:
         table_fields.append(("Guilds", len(ctx.client.guilds)))
-        table_fields.append(("Members", len(list(ctx.client.get_all_members()))))
+        table_fields.append(("Members", mems))
 
     # Commands
     table_fields.append((
