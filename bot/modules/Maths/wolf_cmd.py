@@ -346,7 +346,7 @@ async def cmd_query(ctx, flags):
     out_msg = await ctx.reply(file=dfile, embed=embed)
     asyncio.ensure_future(ctx.offer_delete(out_msg))
 
-    embed.set_image(url="")
+    embed.set_image(url=None)
     if extra:
         try:
             await out_msg.add_reaction(more_emoji)
