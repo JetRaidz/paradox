@@ -1,8 +1,0 @@
-discord<1.0.0
-psutil
-iso8601
-pytz
-pyparsing
-cachetools
-BeautifulSoup4
-pillow

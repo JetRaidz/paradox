@@ -4,6 +4,12 @@
 # Conf files
 *.conf
 
+# Development cruft
+*.swo
+*.swp
+RCS
+tags
+
 # Nanny
 Nanny
 
@@ -121,3 +127,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# vscode config files
+**/.vscode
