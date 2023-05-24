@@ -35,7 +35,7 @@ colourschemes["black"] = gencolour("black")
 colourschemes["light"] = gencolour("'rgb(223, 223, 233)'", False)
 colourschemes["dark"] = gencolour("'rgb(20, 20, 20)'")
 
-colourschemes["gray"] = colourschemes["grey"] = gencolour("'rgb(54, 57, 63)'")
+colourschemes["gray"] = colourschemes["grey"] = gencolour("'rgb(49, 51, 56)'")
 colourschemes["darkgrey"] = gencolour("'rgb(35, 39, 42)'")
 
 colourschemes["trans_white"] = r"convert {image} +negate -bordercolor transparent -border 40 {image}"
