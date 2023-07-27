@@ -177,7 +177,7 @@ async def cmd_userinfo(ctx: Context):
 
     colour = (user.colour if user.colour.value else ParaCC["blue"])
 
-    name = "{} {}".format(user, ctx.client.conf.emojis.getemoji("bot") if user.bot else "")
+    name = "{} {}".format(user.global_name or user.display_name, ctx.client.conf.emojis.getemoji("bot") if user.bot else "")
 
     banner = await get_user_banner(ctx, user.id)
 
@@ -187,8 +187,8 @@ async def cmd_userinfo(ctx: Context):
     joined_ago = f"<t:{joined}:F>"
     created = int(round(user.created_at.timestamp()))
     created_ago = f"<t:{created}:F>"
-    prop_list = ["Full name", "Nickname", "Seen in", "Joined at", "Created at"]
-    value_list = [name, user.display_name,
+    prop_list = ["Name", "Nickname", "Seen in", "Joined at", "Created at"]
+    value_list = [name, user.nick,
                   shared, joined_ago, created_ago]
     desc = prop_tabulate(prop_list, value_list)
 

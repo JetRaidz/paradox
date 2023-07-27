@@ -302,6 +302,17 @@ async def find_member(ctx, userstr, interactive=False, collection=None, collecti
             or searchstr in str(member).lower()
         )
 
+    # Quick function to determine most suitable display name
+    def get_best_name(member):
+        if member.guild:
+            if member.nick:
+                return member.nick
+
+        if member.global_name:
+            return member.global_name
+        else:
+            return member
+
     # Get list of matching members
     members = list(filter(check, collection))
 
@@ -320,8 +331,8 @@ async def find_member(ctx, userstr, interactive=False, collection=None, collecti
             # Interactive prompt with the list of members
             member_names = [
                 "{} {}".format(
-                    member.nick if member.nick else member,
-                    ("({})".format(member)) if member.nick else ""
+                    get_best_name(member),
+                    ("(@{})".format(member)) if (member.nick or member.global_name) else ""
                 ) for member in members
             ]
 
