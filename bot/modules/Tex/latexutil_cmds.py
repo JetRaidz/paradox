@@ -180,7 +180,7 @@ def search_n_parse(soup: BeautifulSoup):
     title = title.text
     converter = MarkdownConverter()
     package_desc = soup.find("p")
-    emb_desc = converter.process_tag(package_desc)
+    emb_desc = converter.process_tag(package_desc).replace("`", "'")
 
     table = soup.find("table")
     prop_list = []
@@ -231,8 +231,11 @@ async def cmd_texdoc(ctx):
     elif not ctx.args:
         return await ctx.error_reply("Please give me something to search for!")
 
+    # Prevent escaping markdown
+    args = discord.utils.escape_mentions(ctx.arg_str).strip("`")
+
     await ctx.reply("Documentation for `{}`: {}".format(
-        ctx.args,
+        args,
         texdoc_url.format(urllib.parse.quote_plus(ctx.args))
     ))
 
