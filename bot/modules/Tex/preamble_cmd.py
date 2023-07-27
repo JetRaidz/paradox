@@ -1,6 +1,7 @@
 # pylint:ignore=C901
 
 import os
+import logging
 
 import discord
 
@@ -78,6 +79,19 @@ async def cmd_preamble(ctx, flags):
 
     # Get the whitelisted packages
     whitelisted_packages = []
+
+    try:
+        with open("bot/modules/Tex/resources/package_whitelist.txt", "r") as file:
+            for f in file:
+                whitelisted_packages.append(f.strip("\n"))
+            file.close()
+    # The whitelist file should always exist, but just in case
+    except FileNotFoundError:
+        ctx.client.log("Package whitelist is empty due to missing file.", level=logging.WARNING)
+
+    except Exception as e:
+        ctx.client.log(f"Error occurred while generating package whitelist: {e}", level=logging.ERROR)
+
 
     txtflags = ["reset", "retract", "add", "remove", "revert", "usepackage", "replace", "preset"]
     if [flag for flag in txtflags if(ctx.arg_str.lower().startswith(flag))]:
@@ -390,21 +404,23 @@ async def cmd_preamble(ctx, flags):
 
         # Check if the addition is a one line usepackage containing whitelisted packages
         args = args.strip()
+
         if "\n" not in args and args.startswith("\\usepackage"):
             packages = args[11:].strip(' {}').split(",")
-            if all(not package.strip() or (package.strip() in whitelisted_packages) for package in packages):
-                # All the requested packages are whitelisted
-                # Update the preamble, log the changes, and notify the user
-                preamble_data.insert(
-                    allow_replace=True,
-                    userid=ctx.author.id,
-                    preamble=new_submission,
-                    previous_preamble=preamble
-                )
-                await ctx.reply("Your preamble has been updated!")
-                await preamblelog(ctx, "Whitelisted packages were added to the preamble. New preamble below.",
-                                  source=new_submission)
-                return
+            if any(packages):
+                if all(not package.strip() or (package.strip() in whitelisted_packages) for package in packages):
+                    # All the requested packages are whitelisted
+                    # Update the preamble, log the changes, and notify the user
+                    preamble_data.insert(
+                        allow_replace=True,
+                        userid=ctx.author.id,
+                        preamble=new_submission,
+                        previous_preamble=preamble
+                    )
+                    await ctx.reply("Your preamble has been updated!")
+                    await preamblelog(ctx, "Whitelisted packages were added to the preamble. New preamble below.",
+                                      source=new_submission)
+                    return
 
         # Set various warnings
         nonmatching_brackets = False

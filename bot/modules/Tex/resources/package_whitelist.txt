@@ -15,3 +15,5 @@ microtype
 calc
 xparse
 pict2e
+chemfig
+tikz
