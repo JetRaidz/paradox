@@ -102,6 +102,10 @@ async def cmd_tex(ctx, flags):
     flags = {}
     parse_mode = ParseMode.DOCUMENT
 
+    # Set parse mode to gather if alwaysmath is enabled
+    if luser.alwaysmath == 1:
+        parse_mode = ParseMode.GATHER
+
     lalias = ctx.alias.lower()
     if lalias in [',', 'mtex']:
         parse_mode = ParseMode.GATHER
