@@ -10,3 +10,4 @@ from .Guild_Admin import *
 from .Guild_Logging import *
 from .Plugins import *
 from .Starboard import *
+from .Premium import *

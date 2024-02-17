@@ -307,3 +307,18 @@ CREATE TABLE message_stars(
 	_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (app,msgid)
 );
+
+CREATE TABLE patreon_list(
+	patronid INT NOT NULL,
+	userid BIGINT,
+	fullname TEXT,
+	tier TEXT,
+	total INT NOT NULL,
+	status TEXT NOT NULL,
+	last_status TEXT NOT NULL,
+	last_charge TEXT NOT NULL,
+	patron_since TEXT NOT NULL,
+	entitlements TEXT,
+	_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (patronid)
+);
