@@ -121,6 +121,14 @@ async def cmd_tex(ctx, flags):
     # Clean mentions
     content = ctx.clean_arg_str()
 
+    # Strip spoiler characters from input if texsp is used
+    try:
+        if flags["spoiler"]:
+            if content.count("||") >= 2:
+                content = content.replace("||", "")
+    except KeyError:
+        pass
+
     # Parse source
     source = LatexContext.parse_content(content, parse_mode)
 
