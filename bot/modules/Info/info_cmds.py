@@ -58,6 +58,30 @@ async def get_user_banner(ctx, uid):
     return url
 
 
+def format_ts(timestamp):
+    """
+    Converts datetime timestamps for use in Discord's timestamp format.
+    Intended to be used to display "created at" dates.
+
+    Parameters
+    ----------
+    timestamp: datetime.datetime
+        The timestamp to be formatted.
+
+    Returns: str
+        The formatted timestamp to be displayed in Discord.
+
+    """
+    # Handle timestamps being None (e.g. joined_at)
+    if not timestamp:
+        return "Unknown"
+
+    stamp = int(round(timestamp.timestamp()))
+    ts = f"<t:{stamp}:F>"
+
+    return ts
+
+
 @module.cmd(name="roleinfo",
             desc="Displays information about a role.",
             aliases=["role", "rinfo", "ri"])
@@ -85,14 +109,13 @@ async def cmd_roleinfo(ctx: Context):
     # Prepare the role properties
     colour = role.colour if role.colour.value else discord.Colour.light_grey()
     num_users = len(role.members)
-    created = role.created_at.strftime("%I:%M %p, %d/%m/%Y")
-    created_ago = "({} ago)".format(strfdelta(discord.utils.utcnow() - role.created_at, minutes=True))
+    created_ago = format_ts(role.created_at)
     hoisted = "Yes" if role.hoist else "No"
     mentionable = "Yes" if role.mentionable else "No"
 
     # Build the property/value table
-    prop_list = ["Colour", "Hoisted", "Mentionable", "Number of members", "Created at", ""]
-    value_list = [str(role.colour), hoisted, mentionable, num_users, created, created_ago]
+    prop_list = ["Colour", "Hoisted", "Mentionable", "Number of members", "Created at"]
+    value_list = [str(role.colour), hoisted, mentionable, num_users, created_ago]
     desc = prop_tabulate(prop_list, value_list)
 
     # Build the hierarchy graph
@@ -183,10 +206,8 @@ async def cmd_userinfo(ctx: Context):
 
     numshared = sum(g.get_member(user.id) is not None for g in ctx.client.guilds)
     shared = "{} guild{}".format(numshared, "s" if numshared > 1 else "")
-    joined = int(round(user.joined_at.timestamp()))
-    joined_ago = f"<t:{joined}:F>"
-    created = int(round(user.created_at.timestamp()))
-    created_ago = f"<t:{created}:F>"
+    joined_ago = format_ts(user.joined_at)
+    created_ago = format_ts(user.created_at)
     prop_list = ["Name", "Nickname", "Seen in", "Joined at", "Created at"]
     value_list = [name, user.nick,
                   shared, joined_ago, created_ago]
@@ -293,8 +314,7 @@ async def cmd_guildinfo(ctx: Context, flags):
     mfa = "Enabled" if guild.mfa_level else "Disabled"
     channels = "{} text, {} voice, {} categor{}, {} stage, {} forum | {} total".format(text, voice, category, "ies" if category > 1 else "y", stage, forum, total)
     boosts = "Level {} | {} boost{} total".format(guild.premium_tier, guild.premium_subscription_count, "" if guild.premium_subscription_count == 1 else "s")
-    created = int(round(guild.created_at.timestamp()))
-    created_ago = f"<t:{created}:F>"
+    created_ago = format_ts(guild.created_at)
 
     prop_list = ["Owner", "Icon", "Verification",
                  "2FA", "Roles", "Members", "Channels", "Server Boosts", "Created at"]
@@ -336,6 +356,7 @@ async def cmd_channelinfo(ctx: Context, flags):
     Flags::
         topic: Reply with only the channel topic.
     """
+
     tv = {
         "text": "Text channel",
         "voice": "Voice channel",
@@ -356,7 +377,7 @@ async def cmd_channelinfo(ctx: Context, flags):
 
     for ch in ctx.guild.threads:
         gch.append(ch)
-    
+
     me = ctx.guild.me
     user = ctx.author
     # Disallow selecting channels that the user and bot cannot see.
@@ -375,11 +396,9 @@ async def cmd_channelinfo(ctx: Context, flags):
                 if ch.topic else f"{ch.mention} doesn't have a topic.", allowed_mentions=discord.AllowedMentions.none())
         else:
             return await ctx.reply("This channel type doesn't have a topic!")
-
     # Generic embed info, valid for every channel type.
     name = f"{ch.name} [{ch.mention}]" if not isinstance(ch, discord.CategoryChannel) else ch.name
-    created = ch.created_at.strftime("%d/%m/%Y")
-    created_ago = f"({strfdelta(discord.utils.utcnow() - ch.created_at, minutes=True)} ago)"
+    created_ago = format_ts(ch.created_at)
 
     category = "{0} ({0.id})".format(ch.category) if ch.category else "None"
 
@@ -389,8 +408,8 @@ async def cmd_channelinfo(ctx: Context, flags):
     if isinstance(ch, discord.TextChannel):
         topic = ch.topic or "No topic."
         nsfw = "Yes" if ch.nsfw else "No"
-        prop_list = ["Name", "Type", "ID", "NSFW", "Category", "Created at", ""]
-        value_list = [name, tv[str(ch.type)], ch.id, nsfw, category, created, created_ago]
+        prop_list = ["Name", "Type", "ID", "NSFW", "Category", "Created at"]
+        value_list = [name, tv[str(ch.type)], ch.id, nsfw, category, created_ago]
 
         if len(topic) > 30:
             embed.add_field(name="Topic", value=topic)
@@ -400,8 +419,8 @@ async def cmd_channelinfo(ctx: Context, flags):
     elif isinstance(ch, discord.VoiceChannel):
         userlimit = ch.user_limit or "Unlimited"
         nsfw = "Yes" if ch.nsfw else "No"
-        prop_list = ["Name", "Type", "ID", "NSFW", "Category", "Created at", "", "User limit"]
-        value_list = [name, tv[str(ch.type)], ch.id, nsfw, category, created, created_ago, userlimit]
+        prop_list = ["Name", "Type", "ID", "NSFW", "Category", "Created at", "User limit"]
+        value_list = [name, tv[str(ch.type)], ch.id, nsfw, category, created_ago, userlimit]
 
         # List current members.
         if ch.members:
@@ -415,8 +434,8 @@ async def cmd_channelinfo(ctx: Context, flags):
         userlimit = ch.user_limit or "Unlimited"
         topic = ch.topic or "No topic."
         nsfw = "Yes" if ch.nsfw else "No"
-        prop_list = ["Name", "Type", "ID", "NSFW", "Category", "Created at", "", "User limit"]
-        value_list = [name, tv[str(ch.type)], ch.id, nsfw, category, created, created_ago, userlimit]
+        prop_list = ["Name", "Type", "ID", "NSFW", "Category", "Created at", "User limit"]
+        value_list = [name, tv[str(ch.type)], ch.id, nsfw, category, created_ago, userlimit]
 
         if len(topic) > 30:
             embed.add_field(name="Topic", value=topic)
@@ -454,7 +473,7 @@ async def cmd_channelinfo(ctx: Context, flags):
         dur = int(ch.auto_archive_duration / 60)
         auto_archive = "In {} hour{}".format(dur, "s" if dur > 1 else "")
         archived = "Yes" if ch.archived else "No"
-        last_modified = ch.archive_timestamp.strftime("%d/%m/%Y %H:%M:%S")
+        last_modified = format_ts(ch.archive_timestamp)
         tags = ", ".join(tag.name for tag in ch.applied_tags) if len(ch.applied_tags) else "No tags."
 
         prop_list = ["Name", "Origin", "Type", "ID", "Owner", "Auto archive", "Archived", "Last modified", "Tags"]
@@ -462,8 +481,8 @@ async def cmd_channelinfo(ctx: Context, flags):
     elif isinstance(ch, discord.ForumChannel):
         nsfw = "Yes" if ch.nsfw else "No"
         tags = ", ".join(tag.name for tag in ch.available_tags) if len(ch.available_tags) else "No tags."
-        prop_list = ["Name", "Type", "ID", "NSFW", "Created at", "", "Tags"]
-        value_list = [name, tv[str(ch.type)], ch.id, nsfw, created, created_ago, tags]
+        prop_list = ["Name", "Type", "ID", "NSFW", "Created at", "Tags"]
+        value_list = [name, tv[str(ch.type)], ch.id, nsfw, created_ago, tags]
 
         active = [thread for thread in ch.threads if not thread.archived]
         
@@ -474,8 +493,8 @@ async def cmd_channelinfo(ctx: Context, flags):
 
     elif isinstance(ch, discord.CategoryChannel):
         nsfw = "Yes" if ch.nsfw else "No"
-        prop_list = ["Name", "Type", "ID", "NSFW", "Created at", ""]
-        value_list = [name, tv[str(ch.type)], ch.id, nsfw, created, created_ago]
+        prop_list = ["Name", "Type", "ID", "NSFW", "Created at",]
+        value_list = [name, tv[str(ch.type)], ch.id, nsfw, created_ago]
 
         # List visible channels in a category
         valid = [chan for chan in ch.channels if chan.permissions_for(ctx.author).read_messages]
@@ -486,8 +505,8 @@ async def cmd_channelinfo(ctx: Context, flags):
             emb_add_fields(embed, field)
     else:
         # If any other type is present, provide generic information only.
-        prop_list = ["Name", "Type", "ID", "Created at", ""]
-        value_list = [name, tv[str(ch.type)], ch.id, created, created_ago]
+        prop_list = ["Name", "Type", "ID", "Created at"]
+        value_list = [name, tv[str(ch.type)], ch.id, created_ago]
 
     # Add the embed description
     desc = prop_tabulate(prop_list, value_list)
