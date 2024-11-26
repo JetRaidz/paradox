@@ -1,32 +1,27 @@
-% Required to support mathematical unicode
-\usepackage[warnunknown, fasterrors, mathletters]{ucs}
-\usepackage[utf8x]{inputenc}
-
 % Always typeset math in display style
 \everymath{\displaystyle}
 
-% Use a larger font size
-\usepackage[fontsize=14pt]{scrextend}
-
 % Standard mathematical typesetting packages
-\usepackage{amsfonts, amsthm, amsmath, amssymb}
-\usepackage{mathtools}  % Extension to amsmath
+\usepackage[T1]{fontenc}
+\usepackage{amsthm, amsmath, amssymb}
+\usepackage[fixamsmath]{mathtools}  % Extension to amsmath
+\usepackage[cal=cm, scr=rsfs, frak=euler, bb=ams]{mathalpha}
+\usepackage{lmodern}
 
 % Symbol and utility packages
-\usepackage{cancel, textcomp}
-\usepackage[mathscr]{euscript}
+\usepackage{cancel}
 \usepackage[nointegrals]{wasysym}
 
 % Extras
 \usepackage{physics}  % Lots of useful shortcuts and macros
-\usepackage{tikz-cd}  % For drawing commutative diagrams easily
-\usepackage{color}  % Add some colour to life
-\usepackage{microtype}  % Minature font tweaks
+\usepackage{quiver}  % For drawing commutative diagrams easily
+\usepackage{hwemoji}  % Support Unicode emojis
+\DeclareUnicodeCharacter{FE0E}{}
+\DeclareUnicodeCharacter{FE0F}{}
 
 % Common shortcuts
 \def\mbb#1{\mathbb{#1}}
 \def\mfk#1{\mathfrak{#1}}
-
 \def\bN{\mbb{N}}
 \def\bC{\mbb{C}}
 \def\bR{\mbb{R}}
@@ -34,10 +29,8 @@
 \def\bZ{\mbb{Z}}
 
 % Sometimes helpful macros
-\newcommand{\func}[3]{#1\colon#2\to#3}
-\newcommand{\vfunc}[5]{\func{#1}{#2}{#3},\quad#4\longmapsto#5}
-\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
-\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
 
 % Some standard theorem definitions
 \newtheorem{Theorem}{Theorem}

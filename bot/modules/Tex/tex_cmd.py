@@ -102,6 +102,10 @@ async def cmd_tex(ctx, flags):
     flags = {}
     parse_mode = ParseMode.DOCUMENT
 
+    # Set parse mode to gather if alwaysmath is enabled
+    if luser.alwaysmath == 1:
+        parse_mode = ParseMode.GATHER
+
     lalias = ctx.alias.lower()
     if lalias in [',', 'mtex']:
         parse_mode = ParseMode.GATHER
@@ -116,6 +120,14 @@ async def cmd_tex(ctx, flags):
 
     # Clean mentions
     content = ctx.clean_arg_str()
+
+    # Strip spoiler characters from input if texsp is used
+    try:
+        if flags["spoiler"]:
+            if content.count("||") >= 2:
+                content = content.replace("||", "")
+    except KeyError:
+        pass
 
     # Parse source
     source = LatexContext.parse_content(content, parse_mode)
