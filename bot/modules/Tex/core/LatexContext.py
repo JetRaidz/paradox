@@ -305,7 +305,8 @@ class LatexContext:
             file_path = failed_image_path if not exists else file_path
 
             # Build the file object for sending, possibly spoilered
-            output_file = discord.File(file_path, spoiler=exists and self._spoiler_output)
+            file_desc = "Rendered LaTeX code containing the following content: {}".format(self.source[:960])
+            output_file = discord.File(file_path, spoiler=exists and self._spoiler_output, description=file_desc)
 
             # Finally, send the output and start the reaction handler
             try:
