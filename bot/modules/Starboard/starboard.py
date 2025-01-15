@@ -293,6 +293,10 @@ async def starboard_listener(client, payload):
         # If there are star roles, check them now
         # Probably add these to the cache?
         if not unstar:
+            # Disregard stars if message is from the bot and in starboard channel
+            if message.channel == starboard and message.author.id == client.user.id:
+                return
+
             roles = client.guild_config.star_roles.get(client, payload.guild_id).value
             if roles:
                 # Request chunking so that reaction user roles can be fetched
@@ -354,15 +358,18 @@ async def starboard_listener(client, payload):
         # If the message has an attachment and it can be displayed, embed it while respecting spoilers
         elif message.attachments:
             data = message.attachments[0]
-            filename = discord.utils.escape_markdown(data.filename)
+            filename = data.filename
             spoiler = data.is_spoiler()
 
-            if not spoiler and data.url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
-                embed.set_image(url=data.url)
+            # Split junk from attachment URL
+            data_url = data.url.split("?")[0]
+
+            if not spoiler and data_url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+                embed.set_image(url=data_url)
 
             # Link the file if it has a spoiler as images can't be marked as spoilers in embeds
             elif spoiler:
-                embed.add_field(name='Attachment', value=f'||[{filename}]({data.url})||', inline=False)
+                embed.add_field(name='Attachment', value=f'||[{discord.utils.escape_markdown(filename)}]({data.url})||', inline=False)
 
             # Link any file that isn't an image
             else:
