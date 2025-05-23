@@ -395,6 +395,22 @@ async def cmd_preamble(ctx, flags):
 
     # Handle a request to add material to the preamble
     if flags['add'] or args:
+
+        # Warn user before submitting another request if they already have one pending
+        if pending_preamble:
+            prompt = (
+                "**Warning: You currently have a request awaiting review.**\n"
+                "Sending another submission will **overwrite your previous request**, "
+                "and you will lose your changes.\n"
+                "Reply with `y` to proceed, or `n` to cancel.")
+            try:
+                response = await ctx.input(prompt, timeout=600)
+            except ResponseTimedOut:
+                return await ctx.error_reply("Query timed out, your preamble was not modified.")
+            if response.lower() == "n":
+                return await ctx.error_reply("Query cancelled, your preamble was not modified.")
+
+
         if not args:
             # Prompt the user for the material they wish to add, handle cancellations and timeout
             prompt = (
