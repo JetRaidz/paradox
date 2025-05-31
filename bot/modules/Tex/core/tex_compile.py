@@ -18,48 +18,35 @@ Provides a single context utility to compile LaTeX code from a user and return a
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
-def gencolour(colour, negate=True):
+def gencolour(bgcolour, textcolour):
     """
-    Build the colour conversion command for the provided colour, negating black text if required
+    Build the colour definition commands for the provided colourscheme
     """
-    return r"convert {{image}} {} -bordercolor transparent -border 50 \
-        -background {} -flatten {{image}}".format("+negate" if negate else "", colour)
+    return r"\def\texit@bgcolor{{{}}} \def\texit@textcolor{{{}}}".format(bgcolour, textcolour)
 
 
 # Dictionary of valid colours and the associated transformation commands
 colourschemes = {}
 
-colourschemes["white"] = gencolour("white", False)
-colourschemes["black"] = gencolour("black")
+colourschemes["white"] = gencolour("ffffff", "000000")
+colourschemes["black"] = gencolour("000000", "ffffff")
 
-colourschemes["light"] = gencolour("'rgb(223, 223, 233)'", False)
-colourschemes["dark"] = gencolour("'rgb(20, 20, 20)'")
+colourschemes["light"] = gencolour("dfdfdf", "1d1d1d")
+colourschemes["dark"] = gencolour("141414", "eeeeee")
 
-colourschemes["gray"] = colourschemes["grey"] = gencolour("'rgb(49, 51, 56)'")
-colourschemes["darkgrey"] = gencolour("'rgb(35, 39, 42)'")
+colourschemes["gray"] = colourschemes["grey"] = gencolour("313338", "ffffff")
+colourschemes["darkgrey"] = gencolour("23272a", "ffffff")
 
-colourschemes["trans_white"] = r"convert {image} +negate -bordercolor transparent -border 40 {image}"
-colourschemes["trans_black"] = None
+colourschemes["trans_white"] = gencolour("trans", "ffffff")
+colourschemes["trans_black"] = gencolour("trans", "000000")
 colourschemes["transparent"] = colourschemes["trans_white"]
 
 colourschemes["default"] = colourschemes["grey"]
 
 
-# Script which pads images to a minimum width of 1000
-pad_script = r"""
-width=`convert {image} -format "%[fx:w]" info:`
-minwidth=1000
-extra=$((minwidth-width))
-
-if [ $extra -gt 0 ]; then
-    convert {image} \
-        -gravity East +antialias -splice ${{extra}}x\
-        -alpha set -background transparent -alpha Background -channel alpha -fx "i>${{width}}-5?0:a" +channel {image}
-fi
-"""
 
 # Header for every LaTeX source file
-header = "\\documentclass[preview, border=20pt, 12pt]{standalone}\
+header = "\\documentclass{texit}\
     \n\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
     \n\\nonstopmode"
 
@@ -72,7 +59,11 @@ header = "\\documentclass[preview, border=20pt, 12pt]{standalone}\
 """
 
 # The format of the source to compile
-to_compile = "{header}\
+to_compile = "\\makeatletter\
+    \n{colour}\
+    \n{alwayswide}\
+    \n\\makeatother\
+    \n{header}\
     \n{preamble}\
     \n\\begin{{document}}\
     \n{source}\
@@ -102,18 +93,16 @@ async def makeTeX(ctx, source, targetid, preamble=default_preamble, colour="defa
     fn = "{}/{}.tex".format(path, targetid)
 
     with open(fn, 'w') as work:
-        work.write(to_compile.format(header=header, preamble=preamble, source=source))
+        work.write(to_compile.format(colour=colourschemes[colour] or "",
+                                     alwayswide="\\def\\texit@alwayswide{0}" if pad else "\\def\\texit@alwayswide{1}",
+                                     header=header, preamble=preamble, source=source))
         work.close()
 
     # Build compile script
     script = (
         "{compile_script} {id} || exit;\n"
-        "cd {path}\n"
-        "{colour}\n"
-        "{pad}").format(compile_script=compile_script_path,
-                        id=targetid, path=path,
-                        colour=colourschemes[colour] or "",
-                        pad=pad_script if pad else "").format(image="{}.png".format(targetid))
+        "cd {path}\n").format(compile_script=compile_script_path,
+                        id=targetid, path=path).format(image="{}.png".format(targetid))
 
     # Run the script in an async executor
     return await ctx.run_in_shell(script)

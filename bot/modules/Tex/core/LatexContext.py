@@ -416,9 +416,9 @@ class LatexContext:
             if mode == ParseMode.DOCUMENT:
                 source = "\n\n".join(blocks)
             elif mode == ParseMode.GATHER:
-                source = "\n".join(["\\begin{{gather*}}\n{}\n\\end{{gather*}}".format(block) for block in blocks])
+                source = "\n".join(["$\\begin{{gathered}}\n{}\n\\end{{gathered}}$".format(block) for block in blocks])
             elif mode == ParseMode.ALIGN:
-                source = "\n".join(["\\begin{{align*}}\n{}\n\\end{{align*}}".format(block) for block in blocks])
+                source = "\n".join(["$\\begin{{aligned}}\n{}\n\\end{{aligned}}$".format(block) for block in blocks])
             elif mode == ParseMode.TIKZ:
                 source = "\n".join(["\\begin{{tikzpicture}}\n{}\n\\end{{tikzpicture}}".format(block) for block in blocks])
             else:
