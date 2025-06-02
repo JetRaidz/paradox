@@ -23,7 +23,7 @@ then
   exit 1
 fi
 
-timeout 20 gs -q -r1800 -sDEVICE=pngalpha -dBATCH -dNOPAUSE -dDownScaleFactor=3 -sOutputFile=$1.png $1.pdf
+timeout 20 gs -q -dSAFER -dBATCH -dNOPAUSE -sDEVICE=pngalpha -r1800 -dDownScaleFactor=3 -sOutputFile=$1.png $1.pdf
 if [ $? -eq 124 ];
 then
  echo "Image processing timed out!";
