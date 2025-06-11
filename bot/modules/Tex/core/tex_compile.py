@@ -20,9 +20,9 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 def gencolour(bgcolour, textcolour):
     """
-    Build the colour definition commands for the provided colourscheme
+    Build the class options for the provided colourscheme
     """
-    return r"\def\texit@bgcolor{{{}}} \def\texit@textcolor{{{}}}".format(bgcolour, textcolour)
+    return r"bgcolor={}, textcolor={}".format(bgcolour, textcolour)
 
 
 # Dictionary of valid colours and the associated transformation commands
@@ -46,23 +46,18 @@ colourschemes["default"] = colourschemes["grey"]
 
 
 # Header for every LaTeX source file
-header = "\\documentclass{texit}\
-    \n\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
+header = "\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
     \n\\nonstopmode"
 
 """
 # Alternative header to support discord emoji, but not other unicode
-header = "\\documentclass[preview, border=20pt, 12pt]{standalone}\
-    \n\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
+header = "\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
     \n\\usepackage{discord-emoji}
     \n\\nonstopmode"
 """
 
 # The format of the source to compile
-to_compile = "\\makeatletter\
-    \n{colour}\
-    \n{alwayswide}\
-    \n\\makeatother\
+to_compile = "\\documentclass[{colour}{alwayswide}]{{texit}}\
     \n{header}\
     \n{preamble}\
     \n\\begin{{document}}\
@@ -94,7 +89,7 @@ async def makeTeX(ctx, source, targetid, preamble=default_preamble, colour="defa
 
     with open(fn, 'w') as work:
         work.write(to_compile.format(colour=colourschemes[colour] or "",
-                                     alwayswide="\\def\\texit@alwayswide{0}" if pad else "\\def\\texit@alwayswide{1}",
+                                     alwayswide="" if pad else ", alwayswide",
                                      header=header, preamble=preamble, source=source))
         work.close()
 
