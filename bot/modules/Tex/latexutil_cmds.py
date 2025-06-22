@@ -201,10 +201,13 @@ def search_n_parse(soup: BeautifulSoup):
             for link in links:
                 if tds[0].text == "Documentation":
                     link.insert_after(", ")
-                md_link = "[{}]({})".format(
-                    link.text,
-                    urllib.parse.urljoin(ctan_url, link.attrs["href"])
-                )
+                if link.text == urllib.parse.urljoin(ctan_url, link.attrs["href"]):
+                    md_link = link.text
+                else:
+                    md_link = "[{}]({})".format(
+                        link.text,
+                        urllib.parse.urljoin(ctan_url, link.attrs["href"])
+                    )
                 tds[1].a.replace_with(md_link)
 
         prop_list.append(tds[0].text)
@@ -313,10 +316,13 @@ async def cmd_ctan(ctx):
 
         md_links = []
         for url in urls:
-            md_link = "[{}]({})".format(
-                url.text,
-                urllib.parse.urljoin(ctan_url,url.attrs["href"])
-            )
+            if link.text == urllib.parse.urljoin(ctan_url, link.attrs["href"]):
+                md_link = link.text
+            else:
+                md_link = "[{}]({})".format(
+                    link.text,
+                    urllib.parse.urljoin(ctan_url, link.attrs["href"])
+                )
             md_links.append(md_link)
         field_value = "\n".join(md_links)
         embed.add_field(name=stats, value=field_value)
