@@ -57,7 +57,7 @@ header = "\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
 """
 
 # The format of the source to compile
-to_compile = "\\documentclass[{colour}{alwayswide}]{{texit}}\
+to_compile = "\\documentclass[12pt, {colour}{alwayswide}]{{texit}}\
     \n{header}\
     \n{preamble}\
     \n\\begin{{document}}\
