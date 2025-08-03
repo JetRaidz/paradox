@@ -22,7 +22,7 @@ def gencolour(bgcolour, textcolour):
     """
     Build the class options for the provided colourscheme
     """
-    return r"bgcolor={}, textcolor={}".format(bgcolour, textcolour)
+    return r", bgcolor={}, textcolor={}".format(bgcolour, textcolour)
 
 
 # Dictionary of valid colours and the associated transformation commands
@@ -57,7 +57,7 @@ header = "\\IfFileExists{eggs.sty}{\\usepackage{eggs}}{}\
 """
 
 # The format of the source to compile
-to_compile = "\\documentclass[12pt, {colour}{alwayswide}]{{texit}}\
+to_compile = "\\documentclass[12pt{colour}{alwayswide}]{{texit}}\
     \n{header}\
     \n{preamble}\
     \n\\begin{{document}}\
@@ -89,7 +89,7 @@ async def makeTeX(ctx, source, targetid, preamble=default_preamble, colour="defa
 
     with open(fn, 'w') as work:
         work.write(to_compile.format(colour=colourschemes[colour] or "",
-                                     alwayswide="" if pad else ", alwayswide",
+                                     alwayswide=", minpagewidth=110pt" if pad else "",
                                      header=header, preamble=preamble, source=source))
         work.close()
 
