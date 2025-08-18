@@ -296,22 +296,42 @@ async def find_member(ctx, userstr, interactive=False, collection=None, collecti
 
     # Check method to determine whether a member matches
     def check(member):
-        return (
-            member.id == userid
-            or searchstr in member.display_name.lower()
-            or searchstr in str(member).lower()
-        )
+        if member.global_name:
+            return (
+                member.id == userid
+                or searchstr in member.display_name.lower()
+                or searchstr in str(member).lower()
+                or searchstr in member.global_name.lower()
+            )
+        else:
+            return (
+                member.id == userid
+                or searchstr in member.display_name.lower()
+                or searchstr in str(member).lower()
+            )
 
     # Quick function to determine most suitable display name
+    # Appends the member's global name if it is different to display name
     def get_best_name(member):
-        if member.guild:
-            if member.nick:
-                return member.nick
+        name = None
 
         if member.global_name:
-            return member.global_name
+            name = member.global_name
+
         else:
-            return member
+            name = member
+
+        if member.guild:
+            if member.nick:
+                name = member.nick
+
+        # Global_name can be None
+        if member.global_name:
+            if member.display_name != member.global_name:
+                name += " ({})".format(member.global_name)
+
+        return str(name)
+
 
     # Get list of matching members
     members = list(filter(check, collection))
@@ -330,9 +350,9 @@ async def find_member(ctx, userstr, interactive=False, collection=None, collecti
         if interactive:
             # Interactive prompt with the list of members
             member_names = [
-                "{} {}".format(
+                "{:<50s} {}".format(
                     get_best_name(member),
-                    ("(@{})".format(member)) if (member.nick or member.global_name) else ""
+                    ("@{}".format(member)) if (member.nick or member.global_name) else ""
                 ) for member in members
             ]
 
