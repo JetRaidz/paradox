@@ -120,10 +120,13 @@ async def store_roles(client, payload):
 
     # Insert the new roles if there are any
     if role_list:
-        client.data.member_stored_roles.insert_many(
-            *((payload.guild_id, member.id, role) for role in role_list),
-            insert_keys=('guildid', 'userid', 'roleid')
-        )
+        try:
+            client.data.member_stored_roles.insert_many(
+                *((payload.guild_id, member.id, role) for role in role_list),
+                insert_keys=('guildid', 'userid', 'roleid')
+            )
+        except Exception:
+            pass
 
 
 async def restore_roles(client, member):
