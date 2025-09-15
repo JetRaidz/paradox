@@ -50,7 +50,7 @@ async def cmd_calc(ctx):
             discord.utils.escape_mentions(answer["error"])))
         return
     # Start building the message
-    res = "\n".join(answer["result"])
+    res = "\n".join(answer["result"]).replace("```", "")
     res = res[:1900] + (f"...\n--- {str(len(res[1900:]))}" + " characters excluded ---" if len(res) > 1900 else "")
     msg = f"```\n{res}\n```"
 
