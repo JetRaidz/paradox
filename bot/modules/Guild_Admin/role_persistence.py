@@ -146,6 +146,7 @@ async def restore_roles(client, member):
     if roleids:
         # Get the ignored roles
         ignored = set(client.guild_config.role_persistence_ignores.get(client, member.guild.id).value)
+        ignored = [role.id for role in ignored]
         # Filter the roles
         roleids = [roleid for roleid in roleids if roleid not in ignored and roleid != member.guild.default_role.id]
 
