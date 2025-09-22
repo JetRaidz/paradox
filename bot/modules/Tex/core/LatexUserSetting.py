@@ -187,8 +187,8 @@ class colour(LatexUserSetting, String):
         "darkgrey": "Dark grey background, with white text.",
         "dark": "Dark background, with white text.",
         "black": "Pure black background, with white text.",
-        "transparent": "Transparent background, with white text. (May cause issues)",
-        "trans_black": "Transparent background, with black text. (May cause issues)"
+        "transparent": "Transparent background, with white text.",
+        "trans_black": "Transparent background, with black text."
     }
     tabled_colourschemes = prop_tabulate(list(colourschemes.keys()), list(colourschemes.values()))
 
@@ -241,7 +241,7 @@ class alwaysmath(LatexUserSetting, Boolean):
         if not data:
             return "The `tex` command will now render in paragraph mode, as usual."
         else:
-            return "The `tex` command will now render in maths mode, i.e., in a `gather*` environment."
+            return "The `tex` command will now render in maths mode, i.e., in a `gathered` environment."
 
 
 class alwayswide(LatexUserSetting, Boolean):
