@@ -118,79 +118,31 @@ async def cmd_duck(ctx: Context, flags):
 
 @module.cmd("cat",
             desc="Sends a random cat image",
-            aliases=["meow", "purr", "pussy"],
-            flags=["tags==", "caption==", "captioncolour=", "captionsize="])
-async def cmd_cat(ctx: Context, flags):
+            aliases=["meow", "purr", "pussy"])
+async def cmd_cat(ctx: Context):
     """
     Usage``:
         {prefix}cat
     Description:
         Replies with a random cat image!
-    Flags::
-        tags: Search for an image with one of the specified tags.
-        caption: Give the result image a caption.
-        captioncolour: Change the colour of the caption.
-        captionsize: Change the size of the caption.
+        Images are provided by https://thecatapi.com.
     """
-    BASE_URL = "https://cataas.com/"
-    async with aiohttp.ClientSession() as sess:
-        if flags["tags"]:
-            # Remove any commas beforehand
-            flags["tags"] = flags["tags"].replace(",", "")
-            # Format the tag arguments as the URL doesn't accept whitespaces between tags.
-            tag = "?tags={}".format(",".join(arg for arg in flags["tags"].split()))
-            FINAL_URL = BASE_URL + "api/cats" + tag
-        else:
-            FINAL_URL = BASE_URL + "api/cats"
+    try:
+        async with aiohttp.ClientSession() as sess:
+            async with sess.get("https://api.thecatapi.com/v1/images/search") as r:
+                if r.status == 200:
+                    js = await r.json()
+                    cat = js[0]["url"]
 
-        if flags["caption"]:
-            flags["caption"] = flags["caption"].replace(" ", "%20")
-            caption = "/says/" + flags["caption"]
-        else:
-            caption = False
+                    embed = discord.Embed(description="[Meow!]({})".format(cat), color=discord.Colour.light_grey())
+                    embed.set_image(url=cat)
+                    embed.set_footer(text="Images provided by TheCatAPI")
+                    await ctx.reply(embed=embed)
+                else:
+                    return await ctx.error_reply("An error occurred while fetching cats. Please try again later.")
+    except Exception:
+        return await ctx.error_reply("An unexpected error occurred while communicating with the cat API. The service may be currently unavailable.\nPlease try again later.")
 
-        if flags["captioncolour"]:
-            if flags["captionsize"]:
-                colour = "&color={}".format(flags["captioncolour"])
-            else:
-                colour = "?color={}".format(flags["captioncolour"])
-        else:
-            colour = False
-
-        if flags["captionsize"]:
-            size = "?size={}".format(flags["captionsize"])
-        else:
-            size = False
-
-        async with sess.get(FINAL_URL) as r:
-            if r.status == 200:
-                js = await r.json()
-                # Get a random cat from the response
-                try:
-                    cat = random.choice(js)
-                except IndexError:
-                    # The tag provided wasn't found in any of the available images.
-                    return await ctx.error_reply("No images with that tag were found.")
-                cid = cat["_id"]
-                # If a caption is provided, append it to the URL.
-                url = BASE_URL + "cat/{}".format(cid)
-                if caption:
-                    url += caption
-
-                if size:
-                    url += size
-
-                if colour:
-                    url += colour
-
-                embed = discord.Embed(description="[Meow!]({})".format(url), color=discord.Colour.light_grey())
-                embed.set_image(url=url)
-                # If the image has tags, list them in the footer.
-                if cat["tags"]:
-                    embed.set_footer(text="Tags: {}".format(", ".join(ct for ct in cat["tags"])))
-                await ctx.reply(embed=embed)
-            else:
-                return await ctx.error_reply("An error occurred while fetching cats. Please try again later.")
 
 
 @module.cmd("holo",
