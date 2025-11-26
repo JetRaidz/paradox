@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import aiohttp
+import logging
 from urllib import parse
 import json
 from io import BytesIO
@@ -23,6 +24,17 @@ WOLF_SMALL_ICON = "https://media.discordapp.net/attachments/670154440413675540/7
 # truetype/liberation2/LiberationSans-Bold.ttf
 FONT = ImageFont.truetype(font_path, 15, encoding="unic")
 
+# Detailed error handling when Wolfram's API breaks
+class WolframAPIError(Exception):
+    def __init__(self, desc, err_msg):
+        super().__init__(desc)
+        self.err_msg = err_msg
+
+APIErrorDesc = '''
+               Failed to receive a valid response from Wolfram Alpha's API.
+               This service is most likely unavailable.
+               Please check Wolfram Alpha's website for status updates.
+               '''
 
 def build_web_url(query):
     """
@@ -57,16 +69,18 @@ async def get_query(query, appid, **kwargs):
 
     # Get the query response
     async with aiohttp.ClientSession() as session:
-        async with session.get(ENDPOINT, params=payload) as r:
-            if r.status == 200:
-                # Read the response, interp as json, and return
-                data = await r.read()
-                return json.loads(data.decode('utf8'))
-            else:
-                # If some error occurs, unintelligently fail out
-                print(r.status, r)
-                return None
-
+        try:
+            async with session.get(ENDPOINT, params=payload) as r:
+                if r.status == 200:
+                    # Read the response, interp as json, and return
+                    data = await r.read()
+                    return json.loads(data.decode('utf8'))
+                else:
+                    # If some error occurs, unintelligently fail out
+                    print(r.status, r)
+                    return None
+        except Exception as e:
+            raise WolframAPIError(f"Unable to establish connection with Wolfram Alpha's API at `get_query`", e)
 
 async def assemble_pod_image(atoms, dimensions):
     """
@@ -163,8 +177,11 @@ async def handle_image(image_data):
     """
     target = image_data["src"]
     async with aiohttp.ClientSession() as session:
-        async with session.get(target, allow_redirects=False) as resp:
-            response = await resp.read()
+        try:
+            async with session.get(target, allow_redirects=False) as resp:
+                response = await resp.read()
+        except Exception as e:
+            raise WolframAPIError(f"Unable to establish API connection at `handle_image`", e)
     image = Image.open(BytesIO(response))
     return image
     # return smart_trim(image, border=10)
@@ -268,7 +285,15 @@ async def cmd_query(ctx, flags):
     # Query the API, handle errors
     try:
         result = await get_query(ctx.args, appid)
+    except WolframAPIError as e:
+        temp_msg = await ctx.safe_delete_msgs(temp_msg)
+        ctx.client.log(f"Failed to get data from Wolfram Alpha API: {e}\nError message: {e.err_msg}", level=logging.ERROR)
+        embed = discord.Embed(color=discord.Colour.red(), description=APIErrorDesc)
+        embed.add_field(name="Details", value=f"{e}:\n```{e.err_msg}```")
+        return await ctx.reply(embed=embed)
+
     except Exception as e:
+        temp_msg = await ctx.safe_delete_msgs(temp_msg)
         return await ctx.error_reply(
             "An unknown exception occurred while fetching the Wolfram Alpha query!\n"
             "If the problem persists please contact support."
@@ -317,7 +342,16 @@ async def cmd_query(ctx, flags):
         return
 
     if flags["text"]:
-        fields = await pods_to_textdata(result["queryresult"]["pods"])
+        try:
+            fields = await pods_to_textdata(result["queryresult"]["pods"])
+        except WolframAPIError as e:
+            temp_msg = await ctx.safe_delete_msgs(temp_msg)
+            ctx.client.log(f"Failed to get data from Wolfram Alpha API: {e}\nError message: {e.err_msg}", level=logging.ERROR)
+            embed = discord.Embed(color=discord.Colour.red(), description=APIErrorDesc)
+            embed.add_field(name="Details", value=f"{e}:\n```{e.err_msg}```")
+            return await ctx.reply(embed=embed)
+
+
         embed = discord.Embed(description=link)
         embed.set_footer(icon_url=ctx.author.display_avatar, text="Requested by {}".format(ctx.author))
         embed.set_thumbnail(url=WOLF_ICON)
@@ -329,8 +363,16 @@ async def cmd_query(ctx, flags):
 
     important, extra = triage_pods(result["queryresult"]["pods"])
 
-    data = (await pods_to_filedata(important))[0]
-    output_data = [data]
+    try:
+        data = (await pods_to_filedata(important))[0]
+        output_data = [data]
+    except WolframAPIError as e:
+        temp_msg = await ctx.safe_delete_msgs(temp_msg)
+        ctx.client.log(f"Failed to get data from Wolfram Alpha API: {e}\nError message: {e.err_msg}", level=logging.ERROR)
+        embed = discord.Embed(color=discord.Colour.red(), description=APIErrorDesc)
+        embed.add_field(name="Details", value=f"{e}:\n```{e.err_msg}```")
+        return await ctx.reply(embed=embed)
+
 
     embed = discord.Embed(description=link + '\n' + link2)
     embed.set_author(name="Results provided by WolframAlpha",
