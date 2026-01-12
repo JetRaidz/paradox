@@ -61,7 +61,7 @@ async def cmd_rotate(ctx):
             elif embed.type == 'rich':
                 # Image set in a rich embed
                 if embed.image:
-                    image_url = embed.image.proxy_url
+                    image_url = embed.image.url
                     break
 
         if image_url is not None:
