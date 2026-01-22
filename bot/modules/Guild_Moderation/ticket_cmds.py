@@ -49,7 +49,7 @@ async def cmd_tickets(ctx):
     ticket_lines = ["[#{}]({}) ⎪ {} ⎪ `{:<8}` ⎪ {}".format(
         ticket.ticketgid,
         ticket.jumpto,
-        dt.fromtimestamp(ticket.created_at).strftime("%d/%m/%y"),
+        ctx.ts(dt.fromtimestamp(ticket.created_at), mode="d"),
         ticket._ticket_type.name,
         ticket.reason.splitlines()[0] if len(ticket.reason.splitlines()[0]) < 45
         else ticket.reason.splitlines()[0][:42] + '...'

@@ -6,7 +6,7 @@ import discord
 
 from cmdClient import cmdClient
 
-from utils.lib import prop_tabulate, strfdelta
+from utils.lib import prop_tabulate
 
 from .module import utils_module as module
 from .emojis import emojis_by_name, emoji_names_by_unicode
@@ -237,7 +237,7 @@ async def cmd_emoji(ctx: cmdClient, flags):
             prop_list.append('Name')
             value_list.append(emoji.name)
             prop_list.append('ID')
-            value_list.append("`{}`".format(emoji.id))
+            value_list.append("{}".format(emoji.id))
             prop_list.append('Image link')
             value_list.append('[Click here]({})'.format(emoji.url))
             if emoji.user:
@@ -245,12 +245,8 @@ async def cmd_emoji(ctx: cmdClient, flags):
                 value_list.append('{username}#{discriminator}'.format(**emoji.user))
             prop_list.append('Guild')
             value_list.append(emoji.guild)
-            created_ago = strfdelta(discord.utils.utcnow() - emoji.created_at)
-            created = emoji.created_at.strftime("%I:%M %p, %d/%m/%Y")
             prop_list.append('Created at')
-            value_list.append(created)
-            prop_list.append('')
-            value_list.append(created_ago)
+            value_list.append(ctx.ts(emoji.created_at))
         else:
             prop_list = ['Name', 'Unicode', 'String', 'Image link']
             value_list = [emoji['shortcode'], emoji['unicode'], emoji['emoji'], '[Click here]({})'.format(emoji['url'])]

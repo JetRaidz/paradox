@@ -321,8 +321,15 @@ async def cmd_time(ctx, flags):
         # Find the user
         if not ctx.guild:
             user = ctx.author
+        # Consider Message references for selecting a user
+        elif ctx.msg.reference:
+            if ctx.msg.reference.resolved:
+                user = await ctx.find_member(str(ctx.msg.reference.resolved.author.id))
+                if not user:
+                    return
         else:
             user = (await ctx.find_member(ctx.args, interactive=True)) if ctx.args else ctx.author
+
         if user is None:
             # Failed to find the target user
             # find_member already complained, so just return
