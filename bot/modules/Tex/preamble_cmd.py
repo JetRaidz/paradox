@@ -1,6 +1,7 @@
 # pylint:ignore=C901
 
 import os
+import re
 import logging
 
 import discord
@@ -197,7 +198,10 @@ async def cmd_preamble(ctx, flags):
             )
     else:
         args = ctx.args
+
+    # Strip args, then remove any codeblock characters
     args = args.strip()
+    args = re.sub("(```)(tex|latex)*", "", args, flags=re.I)
 
     # Handle a request to remove material from the preamble
     if flags['remove']:
@@ -357,8 +361,8 @@ async def cmd_preamble(ctx, flags):
         if not args:
             # Prompt the user for the new preamble, handle cancellations and timeout
             prompt = ("Please enter your new preamble, or `c` to cancel.\n"
-                      "If you wish to upload a file as your preamble, "
-                      "cancel now and rerun with the file attached.")
+                      "**If you wish to upload a file as your preamble, "
+                      "cancel now and rerun with the file attached.**")
             try:
                 new_submission = await ctx.input(prompt, timeout=600)
             except ResponseTimedOut:
@@ -367,6 +371,10 @@ async def cmd_preamble(ctx, flags):
                 return await ctx.error_reply("Preamble replacement cancelled, your preamble was not modified.")
         else:
             new_submission = args
+
+        # Remove codeblock characters from submission
+        new_submission = re.sub("(```)(tex|latex)*", "", new_submission, flags=re.I)
+
 
         # Confirm submission
         prompt = "Please confirm you want to replace your preamble with the following."
@@ -387,6 +395,22 @@ async def cmd_preamble(ctx, flags):
 
     # Handle a request to add material to the preamble
     if flags['add'] or args:
+
+        # Warn user before submitting another request if they already have one pending
+        if pending_preamble:
+            prompt = (
+                "**Warning: You currently have a request awaiting review.**\n"
+                "Sending another submission will **overwrite your previous request**, "
+                "and you will lose your changes.\n"
+                "Reply with `y` to proceed, or `n` to cancel.")
+            try:
+                response = await ctx.input(prompt, timeout=600)
+            except ResponseTimedOut:
+                return await ctx.error_reply("Query timed out, your preamble was not modified.")
+            if response.lower() == "n":
+                return await ctx.error_reply("Query cancelled, your preamble was not modified.")
+
+
         if not args:
             # Prompt the user for the material they wish to add, handle cancellations and timeout
             prompt = (
@@ -404,6 +428,8 @@ async def cmd_preamble(ctx, flags):
 
         # Check if the addition is a one line usepackage containing whitelisted packages
         args = args.strip()
+        args = re.sub("(```)(tex|latex)*", "", args, flags=re.I)
+
 
         if "\n" not in args and args.startswith("\\usepackage"):
             packages = args[11:].strip(' {}').split(",")
