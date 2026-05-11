@@ -42,6 +42,7 @@ async def cmd_rotate(ctx):
         return await ctx.error_reply("I need the `Read Message History` permission in this channel to do this!")
 
     image_url = None
+
     async for message in ctx.ch.history(limit=10):
         # Check for image uploaded with message
         if (
@@ -67,8 +68,23 @@ async def cmd_rotate(ctx):
         if image_url is not None:
             break
 
-    if image_url is None:
-        return await ctx.error_reply("Couldn't find an attached image in the last 10 messages.")
+    # Consider reference message content if command is in reply to a message
+    if ctx.msg.reference:
+        if ctx.msg.reference.resolved:
+            ref = ctx.msg.reference.resolved
+            if ref.attachments:
+                if (
+                    ref.attachments[0].height and
+                    ref.attachments[0].filename and
+                    (mtypes.guess_type(ref.attachments[0].filename)[0] or "").startswith('image')
+                ):
+                    image_url = ref.attachments[0].proxy_url
+            if ref.embeds:
+                if ref.embeds[0].type == "image":
+                    image_url = ref.embeds[0].url
+                if ref.embeds[0].type == "rich":
+                    if ref.embeds[0].image:
+                        image_url = ref.embeds[0].image.url
 
     if ctx.msg.attachments:
         if (
@@ -77,6 +93,9 @@ async def cmd_rotate(ctx):
             (mtypes.guess_type(ctx.msg.attachments[0].filename)[0] or "").startswith('image')
         ):
             image_url = ctx.msg.attachments[0].proxy_url
+
+    if image_url is None:
+        return await ctx.error_reply("Couldn't find an attached image in the last 10 messages.")
 
     async with aiohttp.ClientSession() as session:
         async with session.get(image_url) as r:
