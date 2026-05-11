@@ -6,7 +6,7 @@ from cmdClient import Context
 
 from wards import in_guild, chunk_guild
 from constants import ParaCC
-from utils.lib import emb_add_fields, paginate_list, strfdelta, prop_tabulate, join_list
+from utils.lib import emb_add_fields, paginate_list, prop_tabulate, join_list
 
 from .module import info_module as module
 
@@ -58,30 +58,6 @@ async def get_user_banner(ctx, uid):
     return url
 
 
-def format_ts(timestamp):
-    """
-    Converts datetime timestamps for use in Discord's timestamp format.
-    Intended to be used to display "created at" dates.
-
-    Parameters
-    ----------
-    timestamp: datetime.datetime
-        The timestamp to be formatted.
-
-    Returns: str
-        The formatted timestamp to be displayed in Discord.
-
-    """
-    # Handle timestamps being None (e.g. joined_at)
-    if not timestamp:
-        return "Unknown"
-
-    stamp = int(round(timestamp.timestamp()))
-    ts = f"<t:{stamp}:F>"
-
-    return ts
-
-
 @module.cmd(name="roleinfo",
             desc="Displays information about a role.",
             aliases=["role", "rinfo", "ri"])
@@ -109,7 +85,7 @@ async def cmd_roleinfo(ctx: Context):
     # Prepare the role properties
     colour = role.colour if role.colour.value else discord.Colour.light_grey()
     num_users = len(role.members)
-    created_ago = format_ts(role.created_at)
+    created_ago = ctx.ts(role.created_at)
     hoisted = "Yes" if role.hoist else "No"
     mentionable = "Yes" if role.mentionable else "No"
 
@@ -197,6 +173,12 @@ async def cmd_userinfo(ctx: Context):
         user = await ctx.find_member(ctx.args, interactive=True)
         if not user:
             return
+    # Consider Message references for selecting a user
+    elif ctx.msg.reference:
+        if ctx.msg.reference.resolved:
+            user = await ctx.find_member(str(ctx.msg.reference.resolved.author.id))
+            if not user:
+                return
 
     colour = (user.colour if user.colour.value else ParaCC["blue"])
 
@@ -206,8 +188,8 @@ async def cmd_userinfo(ctx: Context):
 
     numshared = sum(g.get_member(user.id) is not None for g in ctx.client.guilds)
     shared = "{} guild{}".format(numshared, "s" if numshared > 1 else "")
-    joined_ago = format_ts(user.joined_at)
-    created_ago = format_ts(user.created_at)
+    joined_ago = ctx.ts(user.joined_at)
+    created_ago = ctx.ts(user.created_at)
     prop_list = ["Name", "Nickname", "Seen in", "Joined at", "Created at"]
     value_list = [name, user.nick,
                   shared, joined_ago, created_ago]
@@ -314,7 +296,7 @@ async def cmd_guildinfo(ctx: Context, flags):
     mfa = "Enabled" if guild.mfa_level else "Disabled"
     channels = "{} text, {} voice, {} categor{}, {} stage, {} forum | {} total".format(text, voice, category, "ies" if category > 1 else "y", stage, forum, total)
     boosts = "Level {} | {} boost{} total".format(guild.premium_tier, guild.premium_subscription_count, "" if guild.premium_subscription_count == 1 else "s")
-    created_ago = format_ts(guild.created_at)
+    created_ago = ctx.ts(guild.created_at)
 
     prop_list = ["Owner", "Icon", "Verification",
                  "2FA", "Roles", "Members", "Channels", "Server Boosts", "Created at"]
@@ -398,7 +380,7 @@ async def cmd_channelinfo(ctx: Context, flags):
             return await ctx.reply("This channel type doesn't have a topic!")
     # Generic embed info, valid for every channel type.
     name = f"{ch.name} [{ch.mention}]" if not isinstance(ch, discord.CategoryChannel) else ch.name
-    created_ago = format_ts(ch.created_at)
+    created_ago = ctx.ts(ch.created_at)
 
     category = "{0} ({0.id})".format(ch.category) if ch.category else "None"
 
@@ -473,7 +455,7 @@ async def cmd_channelinfo(ctx: Context, flags):
         dur = int(ch.auto_archive_duration / 60)
         auto_archive = "In {} hour{}".format(dur, "s" if dur > 1 else "")
         archived = "Yes" if ch.archived else "No"
-        last_modified = format_ts(ch.archive_timestamp)
+        last_modified = ctx.ts(ch.archive_timestamp)
         tags = ", ".join(tag.name for tag in ch.applied_tags) if len(ch.applied_tags) else "No tags."
 
         prop_list = ["Name", "Origin", "Type", "ID", "Owner", "Auto archive", "Archived", "Last modified", "Tags"]
@@ -538,9 +520,18 @@ async def cmd_avatar(ctx: Context, flags):
             await chunk_guild.run(ctx)
 
             user = await ctx.find_member(ctx.args, interactive=True)
-
             if not user:
                 return
+        # Consider Message references for selecting a user
+        elif ctx.msg.reference:
+            # Only chunk guild if a message is referenced
+            await chunk_guild.run(ctx)
+
+            if ctx.msg.reference.resolved:
+                user = await ctx.find_member(str(ctx.msg.reference.resolved.author.id))
+                if not user:
+                    return
+
         if str(user.colour) == "#000000":
             colour = ParaCC["blue"]
         else:
