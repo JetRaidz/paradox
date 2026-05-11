@@ -161,7 +161,7 @@ class LatexContext:
             else:
                 raise ValueError("Unknown LatexUser namestyle `{}`.".format(self.luser.namestyle))
 
-            name = "**{}**\n".format(
+            name = "{}\n".format(
                 discord.utils.escape_mentions(discord.utils.escape_markdown(raw_name))
             )
         return name
@@ -179,7 +179,7 @@ class LatexContext:
         if self._errors:
             embed.add_field(
                 name="Compile Errors",
-                value="```{}```".format(self._errors),
+                value="```{}```".format(self._errors.replace("```", "")),
                 inline=False
             )
 
@@ -272,14 +272,14 @@ class LatexContext:
             if self._dm_source:
                 source_message = "```fix\nLaTeX source sent via direct message.\n```"
             else:
-                source_message = "```latex\n{}\n```".format(self.source)
+                source_message = "```latex\n{}\n```".format(self.source.replace("```", ""))
 
             if error:
                 self._show_emoji = self.emoji_show_errors
                 self._header_shown = "{}{}Compilation error:```{}```".format(
                     self._header_name,
                     source_message,
-                    error
+                    error.replace("```", "")
                 )
                 self._header_collapsed = (
                     "{}Compile Error! "
