@@ -316,12 +316,12 @@ async def cmd_ctan(ctx):
 
         md_links = []
         for url in urls:
-            if link.text == urllib.parse.urljoin(ctan_url, link.attrs["href"]):
-                md_link = link.text
+            if url.text == urllib.parse.urljoin(ctan_url, url.attrs["href"]):
+                md_link = url.text
             else:
                 md_link = "[{}]({})".format(
-                    link.text,
-                    urllib.parse.urljoin(ctan_url, link.attrs["href"])
+                    url.text,
+                    urllib.parse.urljoin(ctan_url, url.attrs["href"])
                 )
             md_links.append(md_link)
         field_value = "\n".join(md_links)

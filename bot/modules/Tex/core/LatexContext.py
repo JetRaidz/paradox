@@ -161,7 +161,7 @@ class LatexContext:
             else:
                 raise ValueError("Unknown LatexUser namestyle `{}`.".format(self.luser.namestyle))
 
-            name = "{}\n".format(
+            name = "**{}**\n".format(
                 discord.utils.escape_mentions(discord.utils.escape_markdown(raw_name))
             )
         return name
