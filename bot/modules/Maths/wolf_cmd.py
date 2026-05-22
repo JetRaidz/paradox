@@ -243,7 +243,7 @@ def triage_pods(pod_list):
 @module.cmd("query",
             desc="Query the [Wolfram Alpha computation engine]({}).".format(WEB),
             flags=["text"],
-            aliases=["ask", "wolf", "w", "?w"])
+            aliases=["ask", "wolf", "wolfram", "w", "?w"])
 async def cmd_query(ctx, flags):
     """
     Usage``:
