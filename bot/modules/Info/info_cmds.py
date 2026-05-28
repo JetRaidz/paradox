@@ -82,6 +82,17 @@ async def cmd_roleinfo(ctx: Context):
     if not role:
         return
 
+    # Handle roles with gradients
+    if role.secondary_colour:
+        colour_prop = "Gradient"
+        if role.tertiary_color:
+            colour_value = str(role.colour) + "–" + str(role.secondary_colour) + "–" + str(role.tertiary_colour)
+        else:
+            colour_value = str(role.colour) + "–" + str(role.secondary_colour)
+    else:
+        colour_prop = "Colour"
+        colour_value = str(role.colour)
+
     # Prepare the role properties
     colour = role.colour if role.colour.value else discord.Colour.light_grey()
     num_users = len(role.members)
@@ -90,8 +101,8 @@ async def cmd_roleinfo(ctx: Context):
     mentionable = "Yes" if role.mentionable else "No"
 
     # Build the property/value table
-    prop_list = ["Colour", "Hoisted", "Mentionable", "Number of members", "Created at"]
-    value_list = [str(role.colour), hoisted, mentionable, num_users, created_ago]
+    prop_list = [colour_prop, "Hoisted", "Mentionable", "Number of members", "Created at"]
+    value_list = [colour_value, hoisted, mentionable, num_users, created_ago]
     desc = prop_tabulate(prop_list, value_list)
 
     # Build the hierarchy graph
