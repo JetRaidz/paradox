@@ -82,8 +82,8 @@ async def cmd_roleinfo(ctx: Context):
     if not role:
         return
 
-    # Handle roles with gradients
-    if role.secondary_colour:
+    # Handle roles with gradients, also check if server is boosted to prevent showing gradient after loosing boosts
+    if "ENHANCED_ROLE_COLORS" in ctx.guild.features and role.secondary_colour:
         colour_prop = "Gradient"
         if role.tertiary_colour:
             colour_value = str(role.colour) + "–" + str(role.secondary_colour) + "–" + str(role.tertiary_colour)
