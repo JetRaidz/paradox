@@ -34,8 +34,8 @@ async def cmd_tex(ctx, flags):
             is generally not required.
     Aliases::
         tex: Code is compiled in the default `document` environment.
-        , or mtex: Code is rendered in math mode, in a `gather*` environment.
-        align: Code is rendered in math mode, aligned in an `align*` environment.
+        , or mtex: Code is rendered in math mode, in a `gathered` environment.
+        align: Code is rendered in math mode, aligned in an `aligned` environment.
         texsp: Same as `tex`, but ||spoiler|| the output image.
         texw: Don't pad the output (with transparent pixels) after compilation.
         tikz: Code is rendered in a `tikzpicture` environment.
