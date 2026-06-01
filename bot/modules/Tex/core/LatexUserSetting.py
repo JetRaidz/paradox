@@ -241,7 +241,7 @@ class alwaysmath(LatexUserSetting, Boolean):
         if not data:
             return "The `tex` command will now render in paragraph mode, as usual."
         else:
-            return "The `tex` command will now render in maths mode, i.e., in a `gather*` environment."
+            return "The `tex` command will now render in maths mode, i.e., in a `gathered` environment."
 
 
 class alwayswide(LatexUserSetting, Boolean):
