@@ -232,6 +232,10 @@ async def cmd_giveme(ctx: Context, flags):
                 "Please select the desired selfroles! "
                 "(Use `{}iamnot` to remove your current selfroles.)".format(ctx.best_prefix())
             )
+            if not selfroles:
+                return await ctx.error_reply(
+                    "No selfroles have been configured for this guild."
+                )
             select_from = [role for role in selfroles if role not in ctx.author.roles]
             if not select_from:
                 return await ctx.error_reply(
