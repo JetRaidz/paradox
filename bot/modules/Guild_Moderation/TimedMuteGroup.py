@@ -196,7 +196,7 @@ class TimedMuteGroup:
             # Execute the unmutes
             await self._unmute_members()
             if self._cancelled:
-                # Wait a moment to catch the cancel, in case it was propogated from inside the unmute
+                # Wait a moment to catch the cancel, in case it was propagated from inside the unmute
                 await asyncio.sleep(0.1)
         except asyncio.CancelledError:
             pass

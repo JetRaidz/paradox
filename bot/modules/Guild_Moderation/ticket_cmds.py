@@ -78,7 +78,7 @@ async def cmd_tickets(ctx):
 async def _offer_cancel(ctx, msg, *tasks, timeout=300):
     """
     Add a cancel reaction to the given `msg` to cancel the given tasks.
-    Cancels the tasks after the reaction is pressed or upon timout.
+    Cancels the tasks after the reaction is pressed or upon timeout.
     """
     # Get the cancel emoji
     emoji = ctx.client.conf.emojis.getemoji("cancel", "❌")
