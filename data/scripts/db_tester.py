@@ -34,7 +34,7 @@ data_noapp = BotData(app="", **dbopts)
 data_testapp = BotData(app="testapp", **dbopts)
 
 
-print("Initialised data ojects")
+print("Initialised data objects")
 
 # Add some properties to the propmap
 print("Adding four properties to user table")

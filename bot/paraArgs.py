@@ -21,6 +21,6 @@ parser.add_argument('--writeschema',
 parser.add_argument('--createdb',
                     action='store_true',
                     dest='createdb',
-                    help="Attmpt to create the database. This only works for `sqlite`, and should only be run once.")
+                    help="Attempt to create the database. This only works for `sqlite`, and should only be run once.")
 
 args = parser.parse_args()

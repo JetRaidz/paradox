@@ -232,7 +232,7 @@ class String(SettingType):
     @classmethod
     def _format_data(cls, client: cmdClient, guildid: int, data: str, **kwargs):
         """
-        Wrap the string in backtics for formatting.
+        Wrap the string in backticks for formatting.
         Handle the special case where the string is empty.
         """
         if data:
@@ -361,7 +361,7 @@ class Member(SettingType):
     @classmethod
     def _format_data(cls, client: cmdClient, guildid: int, data: Optional[int], **kwargs):
         """
-        Retrieve an artifically created user mention.
+        Retrieve an artificially created user mention.
         """
         if data is None:
             return None
@@ -496,7 +496,7 @@ class Channel(SettingType):
     @classmethod
     def _format_data(cls, client: cmdClient, guildid: int, data: Optional[int], **kwargs):
         """
-        Retrieve an artifically created channel mention.
+        Retrieve an artificially created channel mention.
         If the channel does not exist, this will show up as invalid-channel.
         """
         if data is None:

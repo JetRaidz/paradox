@@ -147,7 +147,7 @@ class GuildSetting:
     def _data_from_value(cls, client: cmdClient, guildid: int, value, **kwargs):
         """
         Convert a high-level setting value to internal data.
-        Must be overriden by the setting.
+        Must be overridden by the setting.
         Be aware of None values, these should always pass through as None
         to provide an unsetting interface.
         """
@@ -157,7 +157,7 @@ class GuildSetting:
     def _data_to_value(cls, client: cmdClient, guildid: int, data: Any, **kwargs):
         """
         Convert internal data to high-level setting value.
-        Must be overriden by the setting.
+        Must be overridden by the setting.
         """
         raise NotImplementedError
 
@@ -165,7 +165,7 @@ class GuildSetting:
     async def _parse_userstr(cls, ctx: Context, guildid: int, userstr: str, **kwargs):
         """
         Parse user provided input into internal data.
-        Must be overriden by the setting if the setting is user-configurable.
+        Must be overridden by the setting if the setting is user-configurable.
         """
         raise NotImplementedError
 
@@ -173,7 +173,7 @@ class GuildSetting:
     def _format_data(cls, client: cmdClient, guildid: int, data: Any, **kwargs):
         """
         Convert internal data into a formatted user-readable string.
-        Must be overriden by the setting if the setting is user-viewable.
+        Must be overridden by the setting if the setting is user-viewable.
         """
         raise NotImplementedError
 
@@ -182,7 +182,7 @@ class GuildSetting:
     def _reader(cls, client: cmdClient, guildid: int, **kwargs):
         """
         Read a setting from storage and return setting data or None.
-        Must be overriden by the setting.
+        Must be overridden by the setting.
         """
         raise NotImplementedError
 
@@ -190,7 +190,7 @@ class GuildSetting:
     def _writer(cls, client: cmdClient, guildid: int, data: Any, **kwargs):
         """
         Write provided setting data to storage.
-        Must be overriden by the setting unless the `write` method is overidden.
+        Must be overridden by the setting unless the `write` method is overridden.
         If the data is None, the setting is empty and should be unset.
         """
         raise NotImplementedError
