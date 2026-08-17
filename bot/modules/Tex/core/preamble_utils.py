@@ -36,7 +36,7 @@ def tex_pagination(text, basetitle="", header=None, timestamp=True,
                    extra_fields=None, footer=""):
     """
     Break up source LaTeX code into a number of embedded pages,
-    with the code in codeblocks of mximum 1k chars
+    with the code in codeblocks of maximum 1k chars
     """
     if text:
         blocks = split_text(text, 1000, code=True, syntax="latex")

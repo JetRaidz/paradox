@@ -405,7 +405,7 @@ class LatexContext:
             # Build list of relevant blocks
             blocks = [block[1] for block in codeblocks if block[0] in ['', 'tex', 'latex']]
         else:
-            # Strip any wrapping backtics from content
+            # Strip any wrapping backticks from content
             if content.startswith('`') and content.endswith('`'):
                 content = content[1:-1]
 

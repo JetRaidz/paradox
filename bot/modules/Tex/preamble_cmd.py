@@ -205,7 +205,7 @@ async def cmd_preamble(ctx, flags):
 
     # Handle a request to remove material from the preamble
     if flags['remove']:
-        to_remove = []  # List of line indicies to remove
+        to_remove = []  # List of line indices to remove
         new_preamble = None
         lines = preamble.splitlines()
 
@@ -266,7 +266,7 @@ async def cmd_preamble(ctx, flags):
                     "`1, 2-5, 10-20`."
                 )
 
-            # Calculate line indicies
+            # Calculate line indices
             nums = [int(num) - 1 for num in nums]
             if not all(0 <= num < len(lines) for num in nums):
                 return await ctx.error_reply(
