@@ -54,7 +54,7 @@ async def get_query(query, appid, **kwargs):
         appid: The Wolfram Appid to use in the query.
         kwargs: Params for the query.
     Returns:
-        Dictionary containing results or None if an http error occured.
+        Dictionary containing results or None if an http error occurred.
     """
     # Default params
     payload = {"input": query,
@@ -154,7 +154,7 @@ async def glue_pods(flat_pods):
 
 async def flatten_pods(pod_data, level=0, text=False, text_field="plaintext"):
     """
-    Takes the list of pods formatted as in wolf ouptut.
+    Takes the list of pods formatted as in wolf output.
     Returns a list of flattened pods as accepted by glue_pods.
     """
     flat_pods = []
