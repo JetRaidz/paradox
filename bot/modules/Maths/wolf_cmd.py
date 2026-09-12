@@ -225,6 +225,8 @@ async def pods_to_textdata(pod_data):
             current_lines.append("{}**{}**".format(tab * level, title))
         if text:
             current_lines.append("{}{}".format(tab * (level + 1), text))
+    if current_lines:
+        fields.append((current_name if current_name else "Pod", "\n".join(current_lines), 0))
     return fields
 
 
@@ -351,15 +353,47 @@ async def cmd_query(ctx, flags):
             embed.add_field(name="Details", value=f"{e}:\n```{e.err_msg}```")
             return await ctx.reply(embed=embed)
 
+        embeds = []
 
-        embed = discord.Embed(description=link)
-        embed.set_footer(icon_url=ctx.author.display_avatar, text="Requested by {}".format(ctx.author))
-        embed.set_thumbnail(url=WOLF_ICON)
-        emb_add_fields(embed, fields)
+        def make_embed():
+            embed = discord.Embed(description=link)
+            embed.set_thumbnail(url=WOLF_ICON)
+            return embed
+
+        current_embed = make_embed()
+        current_len = len(link)
+
+        for name, value, inline in fields:
+            remaining = value
+
+            while remaining:
+                available = 1000 - current_len - len(name)
+                if available <= 0 and current_embed.fields:
+                    embeds.append(current_embed)
+                    current_embed = make_embed()
+                    current_len = len(link)
+                    available = 1000 - current_len - len(name)
+
+                chunk_size = max(1, available)
+                value_chunk, remaining = remaining[:chunk_size], remaining[chunk_size:]
+
+                emb_add_fields(current_embed, [(name, value_chunk, inline)])
+                current_len += len(name) + len(value_chunk)
+
+                if remaining:
+                    embeds.append(current_embed)
+                    current_embed = make_embed()
+                    current_len = len(link)
+
+        if current_embed.fields or not embeds:
+            embeds.append(current_embed)
+
+        for i, embed in enumerate(embeds, start=1):
+            embed.set_footer(text=f"Requested by {ctx.author} | Page {i}/{len(embeds)}",
+                            icon_url=ctx.author.display_avatar)
+
         temp_msg = await ctx.safe_delete_msgs(temp_msg)
-        out_msg = await ctx.reply(embed=embed)
-        out_msg = await ctx.offer_delete(out_msg)
-        return
+        return await ctx.offer_delete(await ctx.pager(embeds))
 
     important, extra = triage_pods(result["queryresult"]["pods"])
 
