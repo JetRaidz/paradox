@@ -389,8 +389,7 @@ async def cmd_query(ctx, flags):
             embeds.append(current_embed)
 
         for i, embed in enumerate(embeds, start=1):
-            embed.set_footer(text=f"Requested by {ctx.author} | Page {i}/{len(embeds)}",
-                            icon_url=ctx.author.display_avatar)
+            embed.set_footer(icon_url=ctx.author.display_avatar, text=f"Requested by {ctx.author} | Page {i}/{len(embeds)}")
 
         temp_msg = await ctx.safe_delete_msgs(temp_msg)
         return await ctx.offer_delete(await ctx.pager(embeds))
