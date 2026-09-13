@@ -39,7 +39,7 @@ async def cmd_prune(ctx, flags):
         bot: Only messages from bots.
         user:  Only messages from non-bots.
         embed:  Only messages with embeds (including link previews).
-        file: Only messages with uploaded attachements (e.g. images).
+        file: Only messages with uploaded attachments (e.g. images).
         me: Only messages from me ({ctx.client.user.mention}).
         from: Only messages from the given user (interactive lookup).
         after: Only messages after (not including) the given message id (must be in the last `1000` messages).

@@ -230,18 +230,31 @@ async def cmd_time(ctx, flags):
             # We have a timezone, display the success message, current time, and a warning about Etc if needed.
             user_time = get_timestr(tz, brief=brief)
             msg = "Your timezone has been set to `{}`!\nYour current time is {}.".format(tz, user_time)
-            if ctx.args and (tz.startswith("Etc/GMT+") or tz.startswith("Etc/GMT-")):
-                other_tz = tz.replace("+", "-").replace("-", "+")
+            if ctx.args and tz.startswith(("Etc/GMT+", "Etc/GMT-")) and not tz.endswith(("13", "14")):
+                # Flip the offset to get the other GMT timezone.
+                if "GMT+" in tz:
+                    other_tz = tz.replace("+", "-")
+                else:
+                    other_tz = tz.replace("-", "+")
                 other_time = get_timestr(other_tz, brief=brief)
-                proper_time = other_tz[4:]
-                warning = (
-                    "\nNote that due to the POSIX standard, the timezone `{}` represents the time in `{}`.\n"
-                    "If your time is incorrect, consider setting your timezone to `{}`, "
-                    "where the time is currently {}.\n"
-                    "You can read more about the standard at https://en.wikipedia.org/wiki/Tz_database#Area."
-                ).format(tz, proper_time, other_tz, other_time)
 
-                msg += warning
+                # Format the warning message according to the offset.
+                if "GMT+" in other_tz:
+                    offset = other_tz.split("+")[1]
+                    offset_str = "hour{} ahead of GMT".format("s" if offset != "1" else "")
+                else:
+                    offset = other_tz.split("-")[1]
+                    offset_str = "hour{} behind GMT".format("s" if offset != "1" else "")
+
+                if offset != 0:
+                    warning = (
+                        "\nNote that due to the POSIX standard, the timezone `{}` represents the time {} {}.\n"
+                        "If your time is incorrect, consider setting your timezone to `{}`, "
+                        "where the time is currently {}.\n"
+                        "You can read more about the standard at https://en.wikipedia.org/wiki/Tz_database#Area."
+                    ).format(tz, offset, offset_str, other_tz, other_time)
+
+                    msg += warning
 
             time_data.upsert(
                 constraint='userid',

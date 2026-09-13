@@ -27,7 +27,7 @@ async def find_role(ctx, userstr, create=False, interactive=False, collection=No
         If none, uses the guild role list.
     allow_notfound: bool
         Whether to return `None` when there are no matches, instead of raising `SafeCancellation`.
-        Overriden by `create`, if it is set.
+        Overridden by `create`, if it is set.
 
     Returns
     -------
@@ -55,7 +55,7 @@ async def find_role(ctx, userstr, create=False, interactive=False, collection=No
     # Create the collection to search from args or guild roles
     collection = collection if collection is not None else ctx.guild.roles
 
-    # If the unser input was a number or possible role mention, get it out
+    # If the user input was a number or possible role mention, get it out
     userstr = userstr.strip()
     roleid = userstr.strip('<#@&!> ')
     roleid = int(roleid) if roleid.isdigit() else None

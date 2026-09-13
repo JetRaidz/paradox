@@ -45,7 +45,7 @@ async def cmd_prefix(ctx, flags):
         *Note that mentioning the bot will always work as a prefix.*
     Flags::
         set: Set your personal prefix (this will work additionally to the current prefixes).
-        reset: Remove your presonal prefix.
+        reset: Remove your personal prefix.
     Related:
         config
     Examples``:

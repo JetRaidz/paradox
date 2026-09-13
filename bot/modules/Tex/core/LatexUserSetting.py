@@ -59,7 +59,7 @@ class LatexUserSetting(SettingType):
     @classmethod
     def response(cls, ctx, new_data):
         """
-        Generate the appropriate response, possibly dynamically, after successfuly setting the property.
+        Generate the appropriate response, possibly dynamically, after successfully setting the property.
         """
         raise NotImplementedError
 
@@ -125,7 +125,7 @@ class autotex(LatexUserSetting, Boolean):
     default = False
     _outputs = {
         True: "Enabled (may be restricted by guild settings)",
-        False: "Disabled (may be overriden by guild settings)"
+        False: "Disabled (may be overridden by guild settings)"
     }
     _parsing_failed_response = "Unknown option `{userstr}`.\nPlease use `on` or `off`."
 
@@ -162,7 +162,7 @@ class keepsourcefor(LatexUserSetting, Integer):
         Add some decoration to the number, and handle the default.
         """
         if data is None:
-            return "Don't delete source (may be overriden by the guild)"
+            return "Don't delete source (may be overridden by the guild)"
         else:
             return "`{}` seconds".format(data)
 
@@ -172,7 +172,7 @@ class keepsourcefor(LatexUserSetting, Integer):
             return "No longer automatically deleting your LaTeX source."
         else:
             return ("Your source will be deleted {} seconds "
-                    "after a succesful compilation (if not edited).").format(data)
+                    "after a successful compilation (if not edited).").format(data)
 
 
 class colour(LatexUserSetting, String):

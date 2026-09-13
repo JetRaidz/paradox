@@ -31,7 +31,7 @@ async def cmd_gpreamble(ctx, flags):
         Unlike `preamble`, the default action is *replacing* rather than *appending*.
 
         It is recommended to store, test, and edit the guild preamble locally.
-        **Improper use of this command may render LaTeX unusuable in the guild.**
+        **Improper use of this command may render LaTeX unusable in the guild.**
 
         Modifications to the guild preamble require the `Administrator` permission.
     Flags::
@@ -108,7 +108,7 @@ async def cmd_gpreamble(ctx, flags):
         if not await guild_admin.run(ctx):
             return await ctx.error_reply("You need the `Administrator` permission to modify the guild preamble!")
 
-        to_remove = []  # List of line indicies to remove
+        to_remove = []  # List of line indices to remove
         new_preamble = None
         lines = preamble.splitlines()
 
@@ -169,7 +169,7 @@ async def cmd_gpreamble(ctx, flags):
                     "`1, 2-5, 10-20`."
                 )
 
-            # Calculate line indicies
+            # Calculate line indices
             nums = [int(num) - 1 for num in nums]
             if not all(0 <= num < len(lines) for num in nums):
                 return await ctx.error_reply(

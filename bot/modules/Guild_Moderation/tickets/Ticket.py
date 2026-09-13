@@ -22,7 +22,7 @@ T = TypeVar('T', bound='Ticket')
 
 class Ticket:
     """
-    Abstract base class represeting a moderation Ticket.
+    Abstract base class representing a moderation Ticket.
 
     Parameters
     ----------

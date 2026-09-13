@@ -122,6 +122,8 @@ async def selector(ctx, header, select_from, timeout=120, max_len=20, allow_sing
         pass
     except discord.Forbidden:
         pass
+    except discord.HTTPException:
+        return
 
     # Handle user cancellation
     if result_msg.content in ['c', 'C']:
@@ -210,12 +212,14 @@ async def multi_selector(ctx, header, select_from, timeout=120, max_len=20, allo
         pass
     except discord.Forbidden:
         pass
+    except discord.HTTPException:
+        return
 
     # Handle user cancellation
     if result_msg.content in ['c', 'C']:
         raise UserCancelled("User cancelled selection.")
 
-    # The content must now be a valid set of indicies. Collect and return it.
+    # The content must now be a valid set of indices. Collect and return it.
     index = [int(chars.strip()) - 1 for chars in result_msg.content.split(',')]
     return index
 

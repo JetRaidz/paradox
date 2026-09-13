@@ -46,7 +46,7 @@ async def cmd_calc(ctx):
             "An unknown error occurred during calculation!"
         )
     if answer["error"]:
-        await ctx.reply("The following error occured while calculating:\n`{}`".format(
+        await ctx.reply("The following error occurred while calculating:\n`{}`".format(
             discord.utils.escape_mentions(answer["error"]).replace("`", "")))
         return
     # Start building the message

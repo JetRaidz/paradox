@@ -35,7 +35,7 @@ class tableInterface(Interface):
     def from_schema(cls, conn: Connector, app: str, schema: tableSchema, **kwargs):
         """
         Generates a tableInterface from a tableSchema.
-        Trasparently passes remaining `kwargs` along to the constructor.
+        Transparently passes remaining `kwargs` along to the constructor.
         """
         return cls(
             conn,
