@@ -10,8 +10,6 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 from .module import maths_module as module
 from .resources import font_path
 
-from utils.lib import emb_add_fields
-
 from . import wolf_data  # noqa
 # Provides Wolf
 
@@ -377,7 +375,7 @@ async def cmd_query(ctx, flags):
                 chunk_size = max(1, available)
                 value_chunk, remaining = remaining[:chunk_size], remaining[chunk_size:]
 
-                emb_add_fields(current_embed, [(name, value_chunk, inline)])
+                current_embed.add_field(name=name, value=value_chunk, inline=inline)
                 current_len += len(name) + len(value_chunk)
 
                 if remaining:
