@@ -388,7 +388,7 @@ async def cmd_query(ctx, flags):
 
         for i, embed in enumerate(embeds, start=1):
             if len(embeds) != 1:
-                embed.set_footer(icon_url=ctx.author.display_avatar, text=f"Requested by {ctx.author} | Page {i}/{len(embeds)}")
+                embed.set_footer(icon_url=ctx.author.display_avatar, text=f"Page {i}/{len(embeds)} | Requested by {ctx.author}")
             else:
                 embed.set_footer(icon_url=ctx.author.display_avatar, text=f"Requested by {ctx.author}")
 
