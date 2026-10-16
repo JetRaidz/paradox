@@ -38,7 +38,8 @@ def build_web_url(query):
     """
     Returns the url for Wolfram Alpha search for this query.
     """
-    return "{}input/?i={}".format(WEB, parse.quote_plus(query))
+    url = f"{WEB}input/?i={parse.quote_plus(query)}"
+    return url if len(url) <= 500 else WEB
 
 
 async def get_query(query, appid, **kwargs):
