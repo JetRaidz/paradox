@@ -10,8 +10,6 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 from .module import maths_module as module
 from .resources import font_path
 
-from utils.lib import emb_add_fields
-
 from . import wolf_data  # noqa
 # Provides Wolf
 
@@ -40,7 +38,8 @@ def build_web_url(query):
     """
     Returns the url for Wolfram Alpha search for this query.
     """
-    return "{}input/?i={}".format(WEB, parse.quote_plus(query))
+    url = f"{WEB}input/?i={parse.quote_plus(query)}"
+    return url if len(url) <= 500 else WEB
 
 
 async def get_query(query, appid, **kwargs):
@@ -225,6 +224,8 @@ async def pods_to_textdata(pod_data):
             current_lines.append("{}**{}**".format(tab * level, title))
         if text:
             current_lines.append("{}{}".format(tab * (level + 1), text))
+    if current_lines:
+        fields.append((current_name if current_name else "Pod", "\n".join(current_lines), 0))
     return fields
 
 
@@ -351,15 +352,49 @@ async def cmd_query(ctx, flags):
             embed.add_field(name="Details", value=f"{e}:\n```{e.err_msg}```")
             return await ctx.reply(embed=embed)
 
+        embeds = []
 
-        embed = discord.Embed(description=link)
-        embed.set_footer(icon_url=ctx.author.display_avatar, text="Requested by {}".format(ctx.author))
-        embed.set_thumbnail(url=WOLF_ICON)
-        emb_add_fields(embed, fields)
+        def make_embed():
+            embed = discord.Embed(description=link)
+            embed.set_thumbnail(url=WOLF_ICON)
+            return embed
+
+        current_embed = make_embed()
+        current_len = len(link)
+
+        for name, value, inline in fields:
+            remaining = value
+
+            while remaining:
+                available = 1000 - current_len - len(name)
+                if available <= 0 and current_embed.fields:
+                    embeds.append(current_embed)
+                    current_embed = make_embed()
+                    current_len = len(link)
+                    available = 1000 - current_len - len(name)
+
+                chunk_size = max(1, available)
+                value_chunk, remaining = remaining[:chunk_size], remaining[chunk_size:]
+
+                current_embed.add_field(name=name, value=value_chunk, inline=inline)
+                current_len += len(name) + len(value_chunk)
+
+                if remaining:
+                    embeds.append(current_embed)
+                    current_embed = make_embed()
+                    current_len = len(link)
+
+        if current_embed.fields or not embeds:
+            embeds.append(current_embed)
+
+        for i, embed in enumerate(embeds, start=1):
+            if len(embeds) != 1:
+                embed.set_footer(icon_url=ctx.author.display_avatar, text=f"Page {i}/{len(embeds)} | Requested by {ctx.author}")
+            else:
+                embed.set_footer(icon_url=ctx.author.display_avatar, text=f"Requested by {ctx.author}")
+
         temp_msg = await ctx.safe_delete_msgs(temp_msg)
-        out_msg = await ctx.reply(embed=embed)
-        out_msg = await ctx.offer_delete(out_msg)
-        return
+        return await ctx.offer_delete(await ctx.pager(embeds))
 
     important, extra = triage_pods(result["queryresult"]["pods"])
 
